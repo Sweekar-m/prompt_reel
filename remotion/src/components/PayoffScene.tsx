@@ -13,9 +13,9 @@ export const PayoffScene: React.FC<{
   const elems = scene.elements || {};
 
   const title = (elems.title as string) || scene.beat_name || "MASTER TAKEAWAY";
-  const stat = (elems.stat as string) || "O(1) OPTIMAL";
-  const subtitle = (elems.subtitle as string) || "Deterministic hardware execution";
-  const proTip = (elems.pro_tip as string) || "Write branch-friendly conditions to avoid CPU instruction stalls.";
+  const stat = (elems.stat as string) || "SENIOR RULE";
+  const subtitle = (elems.subtitle as string) || "Deterministic system execution";
+  const proTip = (elems.pro_tip as string) || "Mastering the underlying system mechanics is what unlocks 10x engineering performance.";
 
   const enterSpring = spring({
     frame,

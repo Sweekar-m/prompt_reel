@@ -129,18 +129,25 @@ class ScriptStoryboardAgent:
                 "visual_cues": ms.get("visual_cues", ["2D Cross Section", "Camera 3D Pitch", "Parametric Tensor Surface"])
             }
         elif visual_type == "metaphor":
-            sim_type = "decision_gate"
+            sim_type = tech_info.get("simulation_type")
             t = topic.lower()
-            if any(k in t for k in ["recur", "stack", "call stack", "memory", "heap"]):
-                sim_type = "stack_memory"
-            elif any(k in t for k in ["binary search", "search", "sort", "array", "list", "pointer"]):
-                sim_type = "array_search"
-            elif any(k in t for k in ["loop", "for", "while", "iterator", "stream"]):
-                sim_type = "loop_turbine"
-            elif any(k in t for k in ["if", "condition", "switch", "branch", "logic", "boolean"]):
-                sim_type = "decision_gate"
-            else:
-                sim_type = "neural_core"
+            if not sim_type or sim_type in ("neural_core", "math_3d"):
+                if any(k in t for k in ["oop", "object", "class", "inherit", "polymorph", "encapsulat", "heap", "instance"]):
+                    sim_type = "heap_objects"
+                elif any(k in t for k in ["api", "rest", "http", "network", "async", "await", "event loop", "stream", "queue"]):
+                    sim_type = "data_pipeline"
+                elif any(k in t for k in ["tree", "graph", "b-tree", "sql", "db", "database", "git", "ast"]):
+                    sim_type = "tree_graph"
+                elif any(k in t for k in ["binary search", "search", "sort", "array", "list", "pointer", "partition"]):
+                    sim_type = "array_search"
+                elif any(k in t for k in ["recur", "stack", "call stack", "memory"]):
+                    sim_type = "stack_memory"
+                elif any(k in t for k in ["loop", "for", "while", "iterator"]):
+                    sim_type = "loop_turbine"
+                elif any(k in t for k in ["if", "condition", "switch", "branch", "logic", "boolean"]):
+                    sim_type = "decision_gate"
+                else:
+                    sim_type = "heap_objects" if "java" in t else "data_pipeline"
 
             return {
                 "topic": topic,
@@ -154,16 +161,28 @@ class ScriptStoryboardAgent:
             raw_code = code_info.get("main_code", "")
             lines = raw_code.split("\n") if isinstance(raw_code, str) else raw_code
             
-            # Formulate simulated live variable state & console output
-            output_msg = "> Condition passed: executing branch block."
-            if "if" in topic.lower():
-                output_msg = "> x is greater than 5"
-            elif "binary" in topic.lower():
-                output_msg = "> Element found at target index: 4"
-            elif "loop" in topic.lower():
-                output_msg = "> Items processed: 100% [OK]"
-            elif "recur" in topic.lower():
-                output_msg = "> Base case hit: return 1"
+            # Formulate simulated live variable state & console output directly from code analysis
+            output_msg = code_info.get("terminal_output")
+            if not output_msg:
+                t = topic.lower()
+                if "if" in t:
+                    output_msg = "> Condition evaluated: branch taken"
+                elif "binary" in t or "search" in t:
+                    output_msg = "> Element found at target index: 4"
+                elif "loop" in t:
+                    output_msg = "> Items processed: 100% [OK]"
+                elif "recur" in t:
+                    output_msg = "> Base case hit: return 1"
+                elif any(k in t for k in ["oop", "class", "object"]):
+                    output_msg = "> Instance created on heap: 0x7FA3 [OK]"
+                elif "sql" in t or "db" in t:
+                    output_msg = "> 1 row returned (0.12ms) [INDEX SEEK]"
+                else:
+                    output_msg = f"> {topic}: executed successfully [OK]"
+
+            var_name = code_info.get("variable_name") or ("user" if "oop" in topic.lower() or "class" in topic.lower() else "state")
+            var_val = code_info.get("variable_value") or ("User@0x7FA3" if "oop" in topic.lower() else "active")
+            eval_res = code_info.get("eval_result") or ("INSTANTIATED" if "oop" in topic.lower() else "RESOLVED")
 
             return {
                 "topic": topic,
@@ -173,24 +192,31 @@ class ScriptStoryboardAgent:
                 "annotation": code_info.get("annotation", "evaluates in 1 CPU cycle"),
                 "output_text": output_msg,
                 "variable_state": {
-                    "var_name": "x" if "java" in topic.lower() or "if" in topic.lower() else "state",
-                    "var_value": "10" if "if" in topic.lower() else "active",
-                    "eval_result": "TRUE (1)" if "if" in topic.lower() else "RESOLVED"
+                    "var_name": var_name,
+                    "var_value": var_val,
+                    "eval_result": eval_res
                 }
             }
         elif visual_type == "diagram":
+            diag_title = tech_info.get("diagram_title") or f"{topic.upper()} ARCHITECTURE"
+            diag_sub = tech_info.get("diagram_subtitle") or tech_info.get("cpu_hardware_reality", "Direct execution in hardware memory registers")
+            m_label = tech_info.get("diagram_metric_label") or "TIME COMPLEXITY"
+            m_val = tech_info.get("diagram_metric_val") or tech_info.get("time_complexity", "O(1) Constant Time")
+
             return {
                 "topic": topic,
-                "title": "CPU PIPELINE & HARDWARE ARCHITECTURE",
-                "subtitle": tech_info.get("cpu_hardware_reality", "Direct execution in CPU instruction registers"),
+                "title": diag_title,
+                "subtitle": diag_sub,
                 "steps": tech_info.get("how_it_works_steps", [
-                    "Fetch instruction from instruction cache",
-                    "Evaluate condition register in Arithmetic Logic Unit",
-                    "Branch predictor commits zero-overhead execution"
+                    "Fetch instruction or memory pointer into execution context",
+                    "Evaluate core operational logic and data boundaries",
+                    "Commit state transition with zero excess overhead"
                 ]),
                 "time_complexity": tech_info.get("time_complexity", "O(1) Constant Time"),
                 "space_complexity": tech_info.get("space_complexity", "O(1) Auxiliary"),
-                "pro_tip": tech_info.get("pro_tip", "Keep conditions branch-friendly to avoid CPU pipeline flushes.")
+                "metric_label": m_label,
+                "metric_val": m_val,
+                "pro_tip": tech_info.get("pro_tip", "Mastering low-level execution invariants unlocks 10x engineering performance.")
             }
         elif visual_type == "split" or visual_type == "benchmark":
             return {

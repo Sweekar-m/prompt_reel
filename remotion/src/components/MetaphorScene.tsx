@@ -250,6 +250,352 @@ export const MetaphorScene: React.FC<{
           </div>
         </div>
       );
+    } else if (simulationType.includes("heap") || simulationType.includes("object") || simulationType.includes("class")) {
+      // ─────────────────────────────────────────────────────────────
+      // SIMULATION 4: 3D HEAP OBJECT ALLOCATION & VTABLE
+      // ─────────────────────────────────────────────────────────────
+      const allocProgress = spring({ frame: frame - 15, fps, config: { damping: 14, stiffness: 120 } });
+      const obj2Progress = spring({ frame: frame - 35, fps, config: { damping: 14, stiffness: 120 } });
+
+      return (
+        <div style={{ width: "92%", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+          {/* Class Blueprint */}
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 780,
+              backgroundColor: "rgba(15, 20, 32, 0.9)",
+              border: `2px dashed ${toRgba(palette.primary, 0.6)}`,
+              borderRadius: 16,
+              padding: "16px 24px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              boxShadow: `0 0 30px ${toRgba(palette.primary, 0.2)}`,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <span style={{ fontSize: 24 }}>🏛️</span>
+              <div>
+                <span style={{ fontFamily: monoFont, fontSize: 13, color: toRgba(palette.accent, 1), fontWeight: 700 }}>
+                  BLUEPRINT (METASPACE)
+                </span>
+                <div style={{ fontFamily: monoFont, fontSize: 20, fontWeight: 800, color: "#fff" }}>
+                  class User &#123; id, name, vtable &#125;
+                </div>
+              </div>
+            </div>
+            <span
+              style={{
+                fontFamily: monoFont,
+                fontSize: 12,
+                color: "#10b981",
+                backgroundColor: "rgba(16, 185, 129, 0.15)",
+                padding: "6px 14px",
+                borderRadius: 8,
+                border: "1px solid rgba(16, 185, 129, 0.3)",
+                fontWeight: 700,
+              }}
+            >
+              TYPE LOADED
+            </span>
+          </div>
+
+          {/* Allocation Conduit Arrow */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: monoFont, fontSize: 13, color: toRgba(palette.subtext, 0.8) }}>
+            <span>▼ new User("Alice")</span>
+            <span style={{ color: toRgba(palette.primary, 1) }}>➔ HEAP ALLOCATOR (16B Header) ➔</span>
+          </div>
+
+          {/* Heap Memory Instances */}
+          <div style={{ display: "flex", gap: 18, width: "100%", maxWidth: 780 }}>
+            {/* Instance 1 */}
+            <div
+              style={{
+                flex: 1,
+                backgroundColor: toRgba(palette.surface, 0.92),
+                border: `2px solid ${toRgba(palette.primary, 0.8)}`,
+                borderRadius: 18,
+                padding: "20px 22px",
+                opacity: allocProgress,
+                transform: `scale(${allocProgress})`,
+                boxShadow: `0 10px 40px ${toRgba(palette.primary, 0.25)}`,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <span style={{ fontFamily: monoFont, fontSize: 14, color: toRgba(palette.accent, 1), fontWeight: 700 }}>
+                  0x7FA3A010
+                </span>
+                <span style={{ fontFamily: monoFont, fontSize: 12, color: "#10b981", fontWeight: 700 }}>
+                  LIVE HEAP
+                </span>
+              </div>
+              <div style={{ fontFamily: monoFont, fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 8 }}>
+                User #1
+              </div>
+              <div style={{ fontFamily: monoFont, fontSize: 13, color: toRgba(palette.subtext, 0.9), lineHeight: 1.6 }}>
+                <div>• MarkWord: 0x01 (Unlocked)</div>
+                <div>• KlassPtr: ➔ User.class</div>
+                <div>• Field [id]: "usr_981"</div>
+              </div>
+            </div>
+
+            {/* Instance 2 */}
+            <div
+              style={{
+                flex: 1,
+                backgroundColor: toRgba(palette.surface, 0.92),
+                border: `2px solid ${toRgba(palette.accent, 0.8)}`,
+                borderRadius: 18,
+                padding: "20px 22px",
+                opacity: obj2Progress,
+                transform: `scale(${obj2Progress})`,
+                boxShadow: `0 10px 40px ${toRgba(palette.accent, 0.25)}`,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <span style={{ fontFamily: monoFont, fontSize: 14, color: toRgba(palette.accent, 1), fontWeight: 700 }}>
+                  0x7FA3B048
+                </span>
+                <span style={{ fontFamily: monoFont, fontSize: 12, color: "#10b981", fontWeight: 700 }}>
+                  LIVE HEAP
+                </span>
+              </div>
+              <div style={{ fontFamily: monoFont, fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 8 }}>
+                User #2
+              </div>
+              <div style={{ fontFamily: monoFont, fontSize: 13, color: toRgba(palette.subtext, 0.9), lineHeight: 1.6 }}>
+                <div>• MarkWord: 0x01 (Unlocked)</div>
+                <div>• KlassPtr: ➔ User.class</div>
+                <div>• Field [id]: "usr_982"</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Vtable & Reference Telemetry */}
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 780,
+              backgroundColor: "rgba(0,0,0,0.45)",
+              border: `1px solid ${toRgba(palette.primary, 0.3)}`,
+              borderRadius: 14,
+              padding: "12px 24px",
+              display: "flex",
+              justifyContent: "space-between",
+              fontFamily: monoFont,
+              fontSize: 16,
+            }}
+          >
+            <span style={{ color: toRgba(palette.subtext, 0.9) }}>VTable Dynamic Dispatch:</span>
+            <span style={{ color: "#10b981", fontWeight: 700 }}>RESOLVED (O(1) Direct Offset)</span>
+            <span style={{ color: toRgba(palette.accent, 1), fontWeight: 700 }}>Refs: 2 Active</span>
+          </div>
+        </div>
+      );
+    } else if (simulationType.includes("pipeline") || simulationType.includes("network") || simulationType.includes("api") || simulationType.includes("stream")) {
+      // ─────────────────────────────────────────────────────────────
+      // SIMULATION 5: ASYNC DATA PIPELINE & EVENT QUEUE
+      // ─────────────────────────────────────────────────────────────
+      const streamX = interpolate(frame % 50, [0, 50], [50, 720]);
+      const reqCount = 1000 + Math.floor(frame * 12);
+
+      return (
+        <div style={{ width: "92%", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+          {/* Main Pipeline Track */}
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              maxWidth: 780,
+              height: 220,
+              backgroundColor: "rgba(10, 15, 26, 0.8)",
+              border: `2px solid ${toRgba(palette.primary, 0.4)}`,
+              borderRadius: 20,
+              overflow: "hidden",
+              padding: "24px",
+              boxShadow: `0 0 40px ${toRgba(palette.primary, 0.15)}`,
+            }}
+          >
+            {/* 3 Pipeline Stages */}
+            <div style={{ display: "flex", justifyContent: "space-between", height: "100%", position: "relative", zIndex: 2 }}>
+              <div style={{ width: 180, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", backgroundColor: toRgba(palette.surface, 0.85), borderRadius: 14, border: `1px solid ${toRgba(palette.primary, 0.4)}` }}>
+                <span style={{ fontFamily: monoFont, fontSize: 12, color: toRgba(palette.subtext, 0.8) }}>CLIENT REQ</span>
+                <span style={{ fontFamily: monoFont, fontSize: 18, fontWeight: 800, color: "#fff", marginTop: 4 }}>HTTP GET</span>
+                <span style={{ fontFamily: monoFont, fontSize: 11, color: "#10b981", marginTop: 2 }}>SOCKET READY</span>
+              </div>
+
+              <div style={{ width: 220, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", backgroundColor: toRgba(palette.surface, 0.9), borderRadius: 14, border: `2px solid ${toRgba(palette.accent, 0.8)}`, boxShadow: `0 0 25px ${toRgba(palette.accent, 0.3)}` }}>
+                <span style={{ fontFamily: monoFont, fontSize: 12, color: toRgba(palette.accent, 1), fontWeight: 700 }}>EVENT LOOP</span>
+                <span style={{ fontFamily: monoFont, fontSize: 20, fontWeight: 900, color: "#fff", marginTop: 4 }}>NON-BLOCKING</span>
+                <span style={{ fontFamily: monoFont, fontSize: 11, color: "#38bdf8", marginTop: 2 }}>ASYNC YIELD (0ms)</span>
+              </div>
+
+              <div style={{ width: 180, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", backgroundColor: toRgba(palette.surface, 0.85), borderRadius: 14, border: `1px solid ${toRgba(palette.primary, 0.4)}` }}>
+                <span style={{ fontFamily: monoFont, fontSize: 12, color: toRgba(palette.subtext, 0.8) }}>WORKER POOL</span>
+                <span style={{ fontFamily: monoFont, fontSize: 18, fontWeight: 800, color: "#fff", marginTop: 4 }}>HTTP 200</span>
+                <span style={{ fontFamily: monoFont, fontSize: 11, color: "#10b981", marginTop: 2 }}>RESOLVED</span>
+              </div>
+            </div>
+
+            {/* Glowing moving packet */}
+            <div
+              style={{
+                position: "absolute",
+                top: 100,
+                left: streamX,
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                backgroundColor: "#38bdf8",
+                boxShadow: "0 0 25px #38bdf8, 0 0 50px #38bdf8",
+                zIndex: 3,
+              }}
+            />
+          </div>
+
+          {/* Telemetry Bar */}
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 780,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              border: `1px solid ${toRgba(palette.primary, 0.3)}`,
+              borderRadius: 14,
+              padding: "14px 24px",
+              display: "flex",
+              justifyContent: "space-between",
+              fontFamily: monoFont,
+              fontSize: 16,
+            }}
+          >
+            <span style={{ color: toRgba(palette.subtext, 0.9) }}>Requests Handled:</span>
+            <span style={{ color: "#fff", fontWeight: 800 }}>{reqCount.toLocaleString()} req/s</span>
+            <span style={{ color: "#10b981", fontWeight: 700 }}>Throughput: OPTIMAL</span>
+          </div>
+        </div>
+      );
+    } else if (simulationType.includes("tree") || simulationType.includes("graph")) {
+      // ─────────────────────────────────────────────────────────────
+      // SIMULATION 6: B-TREE / HIERARCHICAL GRAPH TRAVERSAL
+      // ─────────────────────────────────────────────────────────────
+      const level1Active = frame > 10;
+      const level2Active = frame > 30;
+      const level3Active = frame > 50;
+
+      return (
+        <div style={{ width: "92%", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+          {/* Tree Canvas */}
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 780,
+              height: 270,
+              backgroundColor: "rgba(10, 15, 26, 0.8)",
+              border: `2px solid ${toRgba(palette.primary, 0.4)}`,
+              borderRadius: 20,
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              padding: "24px 30px",
+              boxShadow: `0 0 40px ${toRgba(palette.primary, 0.15)}`,
+            }}
+          >
+            {/* Root Node */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <div
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: 14,
+                  backgroundColor: level1Active ? toRgba(palette.primary, 0.3) : toRgba(palette.surface, 0.8),
+                  border: `2px solid ${level1Active ? toRgba(palette.accent, 1) : toRgba(palette.primary, 0.4)}`,
+                  fontFamily: monoFont,
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: "#fff",
+                  boxShadow: level1Active ? `0 0 25px ${toRgba(palette.accent, 0.4)}` : "none",
+                }}
+              >
+                ROOT: [50] (Key Seeker)
+              </div>
+            </div>
+
+            {/* Level 2 Nodes */}
+            <div style={{ display: "flex", justifyContent: "space-around" }}>
+              <div
+                style={{
+                  padding: "8px 20px",
+                  borderRadius: 12,
+                  backgroundColor: "rgba(20,20,30,0.4)",
+                  border: "1px dashed rgba(255,255,255,0.15)",
+                  fontFamily: monoFont,
+                  fontSize: 16,
+                  color: "#64748b",
+                  opacity: 0.5,
+                }}
+              >
+                [25] (Skipped)
+              </div>
+              <div
+                style={{
+                  padding: "8px 24px",
+                  borderRadius: 12,
+                  backgroundColor: level2Active ? toRgba(palette.primary, 0.35) : toRgba(palette.surface, 0.8),
+                  border: `2px solid ${level2Active ? toRgba(palette.primary, 0.95) : toRgba(palette.primary, 0.4)}`,
+                  fontFamily: monoFont,
+                  fontSize: 16,
+                  fontWeight: 800,
+                  color: "#fff",
+                  boxShadow: level2Active ? `0 0 25px ${toRgba(palette.primary, 0.35)}` : "none",
+                }}
+              >
+                ➔ BRANCH [75] (Traversing)
+              </div>
+            </div>
+
+            {/* Level 3 Leaf Nodes */}
+            <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 60 }}>
+              <div
+                style={{
+                  padding: "10px 28px",
+                  borderRadius: 14,
+                  backgroundColor: level3Active ? "rgba(16, 185, 129, 0.25)" : toRgba(palette.surface, 0.8),
+                  border: `2px solid ${level3Active ? "#10b981" : toRgba(palette.primary, 0.4)}`,
+                  fontFamily: monoFont,
+                  fontSize: 18,
+                  fontWeight: 900,
+                  color: level3Active ? "#10b981" : "#fff",
+                  boxShadow: level3Active ? "0 0 35px rgba(16, 185, 129, 0.5)" : "none",
+                  transform: level3Active ? "scale(1.06)" : "scale(1)",
+                }}
+              >
+                ★ LEAF [85] TARGET FOUND (0.12ms)
+              </div>
+            </div>
+          </div>
+
+          {/* Telemetry Bar */}
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 780,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              border: `1px solid ${toRgba(palette.primary, 0.3)}`,
+              borderRadius: 14,
+              padding: "12px 24px",
+              display: "flex",
+              justifyContent: "space-between",
+              fontFamily: monoFont,
+              fontSize: 16,
+            }}
+          >
+            <span style={{ color: toRgba(palette.subtext, 0.9) }}>Tree Height:</span>
+            <span style={{ color: toRgba(palette.accent, 1), fontWeight: 700 }}>Depth = 3 Levels</span>
+            <span style={{ color: "#10b981", fontWeight: 700 }}>Disk Seeks: O(log N)</span>
+          </div>
+        </div>
+      );
     } else {
       // ─────────────────────────────────────────────────────────────
       // SIMULATION 4 (DEFAULT / CONDITIONALS):

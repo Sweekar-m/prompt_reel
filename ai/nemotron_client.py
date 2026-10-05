@@ -252,6 +252,11 @@ class NemotronClient:
             "- 'cpu_hardware_reality': What actually happens in the CPU instruction pipeline, registers, or RAM (e.g., branch predictor, bytecode jump, pipeline flush, memory allocation).\n"
             "- 'time_complexity': Asymptotic time complexity with brief reason.\n"
             "- 'space_complexity': Space complexity with brief reason.\n"
+            "- 'diagram_title': 3-5 word architectural title for the diagram (e.g. 'JVM HEAP & VTABLE DISPATCH', 'B-TREE INDEX TRAVERSAL', 'TCP 3-WAY HANDSHAKE', 'EVENT LOOP TICK CYCLE').\n"
+            "- 'diagram_subtitle': Short subtitle describing the hardware or protocol layer.\n"
+            "- 'diagram_metric_label': Primary metric name (e.g. 'OBJECT OVERHEAD', 'DISK I/O PAGES', 'LATENCY', 'HEAP FOOTPRINT').\n"
+            "- 'diagram_metric_val': Primary metric value (e.g. '16 bytes header', '3 page seeks', '0.35 ns (1 cycle)', 'O(1)').\n"
+            "- 'simulation_type': Best visual simulation type for this topic, MUST be one of ['heap_objects', 'data_pipeline', 'tree_graph', 'array_search', 'stack_memory', 'loop_turbine', 'decision_gate'].\n"
             "- 'common_misconception': The naive junior-developer assumption.\n"
             "- 'accurate_reality': The senior engineer reality.\n"
             "- 'pro_tip': One actionable golden rule for maximum performance or clean architecture."
@@ -279,7 +284,7 @@ class NemotronClient:
         return "python"
 
     def generate_code_snippets(self, topic: str, language: Optional[str] = None) -> Dict[str, Any]:
-        """Generate clean, syntactically correct illustrative code or math script."""
+        """Generate clean, syntactically correct illustrative code with interactive terminal output."""
         lang = language or self._detect_language(topic)
         ext_map = {
             "python": "py", "java": "java", "cpp": "cpp", "csharp": "cs",
@@ -294,15 +299,19 @@ class NemotronClient:
             f"2. 'main_code': 4 to 8 lines of valid {lang} code directly illustrating '{topic}'.\n"
             f"3. 'highlight_line': 1-based integer line number to spotlight (1 to 8).\n"
             f"4. 'annotation': Short (<= 8 words) technical note explaining the highlighted line.\n"
-            f"5. 'inefficient_before': 2-4 lines of naive or common mistake code.\n"
-            f"6. 'optimized_after': 2-4 lines of optimal or idiomatic {lang} code.\n"
+            f"5. 'terminal_output': Exact realistic console output from executing this snippet (e.g. '> Object User(id=101) initialized in heap' or '> Processed batch: 100 items (OK)').\n"
+            f"6. 'variable_name': The primary variable in the code (e.g. 'user', 'ptr', 'node', 'query').\n"
+            f"7. 'variable_value': Its realistic runtime value (e.g. 'User@0x7A', 'active', 'Node(42)').\n"
+            f"8. 'eval_result': Quick status badge (e.g. 'INSTANTIATED', 'FOUND', 'MATCHED', 'RESOLVED').\n"
+            f"9. 'inefficient_before': 2-4 lines of naive or common mistake code.\n"
+            f"10. 'optimized_after': 2-4 lines of optimal or idiomatic {lang} code.\n"
             "Return ONLY strict valid JSON matching these keys."
         )
         messages = [
             {"role": "system", "content": f"You are a master {lang} programmer and technical educator. Return ONLY valid JSON."},
             {"role": "user", "content": prompt}
         ]
-        raw = self.chat_completion(messages, temperature=0.3, max_tokens=600)
+        raw = self.chat_completion(messages, temperature=0.3, max_tokens=650)
         parsed = self._safe_parse_json(raw, default=None)
 
         if isinstance(parsed, dict) and ("main_code" in parsed or "code" in parsed):
@@ -313,7 +322,7 @@ class NemotronClient:
             parsed["main_code"] = str(code_val).strip()
 
             if not parsed.get("filename"):
-                parsed["filename"] = f"main.{ext}"
+                parsed["filename"] = f"Main.{ext}" if lang == "java" else f"main.{ext}"
 
             for k in ["inefficient_before", "optimized_after"]:
                 v = parsed.get(k, "")
@@ -327,6 +336,15 @@ class NemotronClient:
                 parsed["highlight_line"] = int(parsed.get("highlight_line", 2))
             except Exception:
                 parsed["highlight_line"] = 2
+
+            if not parsed.get("terminal_output"):
+                parsed["terminal_output"] = f"> {topic}: executed successfully [OK]"
+            if not parsed.get("variable_name"):
+                parsed["variable_name"] = "state"
+            if not parsed.get("variable_value"):
+                parsed["variable_value"] = "active"
+            if not parsed.get("eval_result"):
+                parsed["eval_result"] = "RESOLVED"
 
             return parsed
 
@@ -375,14 +393,15 @@ class NemotronClient:
             f"- Misconception: {tech_info.get('common_misconception', '')}\n"
             f"- Pro Tip: {tech_info.get('pro_tip', '')}\n"
             f"- Code Sample:\n{code_info.get('main_code', '')}\n\n"
-            f"Craft a high-retention 5-beat narrative arc across {len(timeline_beats)} scene beats:\n"
-            f"- Beat 1 (Hook): Provocative shocker debunking junior-dev intuition or exposing hardware reality.\n"
-            f"- Beat 2 (Code Execution): Walk through the live code snippet, tracing variables and conditional evaluation.\n"
-            f"- Beat 3 (Visual Simulation): Explain the tactile mechanical simulation on screen (e.g., decision gate, array sweep, call stack).\n"
-            f"- Beat 4 (Hardware / Architecture Secret): Deep technical insight into CPU branch prediction, bytecode, or memory cycles.\n"
-            f"- Beat 5 (Master Pro Tip): Actionable engineering takeaway that makes viewers 10x better engineers.\n\n"
+            f"Craft a high-retention 5-beat narrative arc across {len(timeline_beats)} scene beats specifically tailored to '{topic}':\n"
+            f"- Beat 1 (Hook): Provocative shocker debunking junior-dev intuition or exposing architectural reality of '{topic}'.\n"
+            f"- Beat 2 (Code Execution): Walk through the live code snippet, referencing the specific class, function, or statement shown on screen.\n"
+            f"- Beat 3 (Visual Simulation): Explain the visual simulation on screen representing '{topic}' (such as heap object allocation, data pipeline stream, B-tree traversal, array halving, or stack frames).\n"
+            f"- Beat 4 (System & Architecture Secret): Deep insider insight into how '{topic}' behaves under the hood (e.g. memory layout, protocol lifecycle, compiler optimizations, or cache locality).\n"
+            f"- Beat 5 (Master Pro Tip): One actionable engineering takeaway on '{topic}' that makes viewers 10x better engineers.\n\n"
             "CRITICAL RULES:\n"
             "- Speak like a senior tech creator revealing an insider revelation. Zero fluff, zero childish metaphors like 'raining outside'.\n"
+            "- Ensure every line directly discusses '{topic}' and NOT unrelated concepts like branch prediction unless the topic is actually about branch prediction.\n"
             "- Keep each line punchy: 1 to 2 spoken sentences (14-22 words max), perfectly timed for rapid modern delivery.\n"
             "- FORBIDDEN: NEVER output dictionaries, keys like 'text', or JSON wrappers inside lines.\n"
             "Return ONLY a clean JSON array of plain strings, exactly one spoken line per beat."
@@ -631,8 +650,89 @@ class NemotronClient:
                 ],
                 "time_complexity": "Continuous Parametric Space",
                 "space_complexity": "3D Tensor Field (X, Y, Z)",
+                "diagram_title": "PARAMETRIC SURFACE TENSOR FIELD",
+                "diagram_subtitle": "Continuous transformation from 2D plane to 3D manifold",
+                "diagram_metric_label": "SURFACE RESOLUTION",
+                "diagram_metric_val": "2,500 Vertices (50x50 Mesh)",
+                "simulation_type": "math_3d",
                 "common_misconception": "Math formulas are just dry equations on paper.",
                 "accurate_reality": "Every equation describes a physical, geometric landscape that emerges when viewed in higher dimensions."
+            }
+        elif any(k in t for k in ["oop", "object", "class", "inherit", "polymorph", "encapsulat"]):
+            return {
+                "core_mechanism": "Object-Oriented Programming structures state and behavior into encapsulated classes that instantiate dynamically in heap memory.",
+                "how_it_works_steps": [
+                    "Class blueprint loaded by JVM/Runtime and allocated in Metaspace",
+                    "New operator allocates memory block on heap with 16-byte object header",
+                    "Virtual method table (vtable) binds polymorphic function pointers dynamically"
+                ],
+                "time_complexity": "O(1) Direct Pointer Indirection",
+                "space_complexity": "O(N) Heap Allocated Instances",
+                "diagram_title": "JVM HEAP ALLOCATION & VTABLE DISPATCH",
+                "diagram_subtitle": "Dynamic dispatch resolving object methods through virtual function tables",
+                "diagram_metric_label": "OBJECT HEADER OVERHEAD",
+                "diagram_metric_val": "16 Bytes (MarkWord + KlassWord)",
+                "simulation_type": "heap_objects",
+                "common_misconception": "Classes and objects are identical concepts.",
+                "accurate_reality": "Classes are compile-time type definitions; objects are distinct runtime memory allocations residing on the heap.",
+                "pro_tip": "Favor composition over inheritance to avoid brittle base class coupling."
+            }
+        elif any(k in t for k in ["db", "sql", "database", "index", "b-tree", "query"]):
+            return {
+                "core_mechanism": "Database indexing creates balanced tree hierarchies of disk pages to search records in logarithmic time without full table scans.",
+                "how_it_works_steps": [
+                    "Read root index page into database buffer pool",
+                    "Perform binary search within internal node to locate child pointer",
+                    "Traverse leaf page and retrieve direct disk tuple pointer"
+                ],
+                "time_complexity": "O(log N) Logarithmic Disk Seeks",
+                "space_complexity": "O(N) Balanced B-Tree Footprint",
+                "diagram_title": "B-TREE INDEX DISK TRAVERSAL",
+                "diagram_subtitle": "Multi-tier page traversal minimizing mechanical and SSD storage I/O",
+                "diagram_metric_label": "DISK I/O READS",
+                "diagram_metric_val": "3 Page Seeks (4KB Pages)",
+                "simulation_type": "tree_graph",
+                "common_misconception": "Adding indexes to every column speeds up the database.",
+                "accurate_reality": "Every write and update requires rebuilding all affected index pages, causing heavy write amplification.",
+                "pro_tip": "Create composite indexes that exactly match query predicate column orders."
+            }
+        elif any(k in t for k in ["api", "rest", "http", "network", "async", "await", "event loop"]):
+            return {
+                "core_mechanism": "Asynchronous event-driven pipelines yield execution during network I/O, delegating tasks to worker thread pools.",
+                "how_it_works_steps": [
+                    "Incoming client HTTP payload enqueued in socket buffer",
+                    "Event loop dispatches non-blocking handler and yields execution",
+                    "Kernel notifies completion via epoll/kqueue and resumes callback"
+                ],
+                "time_complexity": "O(1) Event Loop Dispatch",
+                "space_complexity": "O(K) Active Concurrent Connections",
+                "diagram_title": "NON-BLOCKING EVENT LOOP PIPELINE",
+                "diagram_subtitle": "Asynchronous socket polling yielding CPU during remote latency",
+                "diagram_metric_label": "NETWORK ROUND-TRIP (RTT)",
+                "diagram_metric_val": "12 ms (0ms CPU Blocked)",
+                "simulation_type": "data_pipeline",
+                "common_misconception": "Async code runs on multiple CPU cores simultaneously.",
+                "accurate_reality": "Async is about non-blocking concurrency on a single thread; parallelism requires multi-process workers.",
+                "pro_tip": "Never perform synchronous CPU-bound computations inside the async event loop."
+            }
+        elif any(k in t for k in ["search", "binary", "array", "sort", "partition"]):
+            return {
+                "core_mechanism": "Binary search divides the sorted search interval in half at every comparison step, eliminating 50% of candidate items.",
+                "how_it_works_steps": [
+                    "Compute midpoint index between lower and upper boundary pointers",
+                    "Compare middle element against target value",
+                    "Discard entire non-matching partition and recurse on remaining half"
+                ],
+                "time_complexity": "O(log N) Logarithmic Search",
+                "space_complexity": "O(1) Auxiliary Space",
+                "diagram_title": "BINARY SEARCH PARTITION SCANNER",
+                "diagram_subtitle": "Exponential reduction of search space across contiguous memory",
+                "diagram_metric_label": "SEARCH SPACE REDUCTION",
+                "diagram_metric_val": "N / 2 per step (3 steps for 8 items)",
+                "simulation_type": "array_search",
+                "common_misconception": "Linear scanning is fast enough on modern CPUs with caching.",
+                "accurate_reality": "At 1,000,000 items, linear scan takes 1,000,000 ops while binary search finds the item in 20 comparisons.",
+                "pro_tip": "Always verify that input data is strictly sorted before invoking binary search."
             }
         elif "branch" in t or "predict" in t:
             return {
@@ -644,8 +744,14 @@ class NemotronClient:
                 ],
                 "time_complexity": "O(1) Predicted vs 15-20 Cycle Penalty",
                 "space_complexity": "Hardware BTB State Table",
+                "diagram_title": "CPU BRANCH PREDICTION PIPELINE",
+                "diagram_subtitle": "Hardware speculative execution and pipeline instruction commitment",
+                "diagram_metric_label": "MISPREDICTION PENALTY",
+                "diagram_metric_val": "15-20 CPU Instruction Stalls",
+                "simulation_type": "decision_gate",
                 "common_misconception": "CPUs wait for if-statement comparisons to finish before executing.",
-                "accurate_reality": "Modern CPUs guess outcomes ahead of time; random unsorted data causes constant pipeline flushes."
+                "accurate_reality": "Modern CPUs guess outcomes ahead of time; random unsorted data causes constant pipeline flushes.",
+                "pro_tip": "Sort arrays before filtering to maintain predictable branch history."
             }
         elif "recur" in t or "stack" in t:
             return {
@@ -657,8 +763,33 @@ class NemotronClient:
                 ],
                 "time_complexity": "O(N) Stack Depth",
                 "space_complexity": "O(N) Auxiliary Space",
+                "diagram_title": "CALL STACK MEMORY ALLOCATION",
+                "diagram_subtitle": "Stack frame push/pop lifecycle in process virtual memory",
+                "diagram_metric_label": "FRAME ALLOCATION",
+                "diagram_metric_val": "48 Bytes per activation record",
+                "simulation_type": "stack_memory",
                 "common_misconception": "Recursion behaves like a while loop with zero memory penalty.",
-                "accurate_reality": "Every nested invocation allocates stack memory; missing base cases trigger immediate stack overflow."
+                "accurate_reality": "Every nested invocation allocates stack memory; missing base cases trigger immediate stack overflow.",
+                "pro_tip": "Refactor deep recursion to tail recursion or explicit iteration to prevent stack overflow."
+            }
+        elif "loop" in t or "for" in t or "while" in t:
+            return {
+                "core_mechanism": "Loops execute sequential iterations using an index register and condition flag, enabling compiler unrolling.",
+                "how_it_works_steps": [
+                    "Initialize loop counter in CPU register",
+                    "Execute loop body and increment register counter",
+                    "Evaluate loop boundary condition and jump conditionally"
+                ],
+                "time_complexity": "O(N) Linear Work",
+                "space_complexity": "O(1) Register Allocation",
+                "diagram_title": "CPU LOOP TURBINE & UNROLL PIPELINE",
+                "diagram_subtitle": "SIMD vectorized instruction batching and register reuse",
+                "diagram_metric_label": "LOOP THROUGHPUT",
+                "diagram_metric_val": "4 Operations per clock cycle (SIMD)",
+                "simulation_type": "loop_turbine",
+                "common_misconception": "Loops always execute one iteration at a time.",
+                "accurate_reality": "Modern compilers unroll loops and apply SIMD vector registers to process multiple items per cycle.",
+                "pro_tip": "Avoid branch conditions inside hot loop bodies to allow SIMD auto-vectorization."
             }
         else:
             return {
@@ -670,8 +801,14 @@ class NemotronClient:
                 ],
                 "time_complexity": "O(log N) or O(N)",
                 "space_complexity": "O(1) Auxiliary Space",
+                "diagram_title": f"{topic.upper()} ARCHITECTURE & FLOW",
+                "diagram_subtitle": "Deterministic execution path and memory state lifecycle",
+                "diagram_metric_label": "LATENCY / COMPLEXITY",
+                "diagram_metric_val": "O(1) - O(log N)",
+                "simulation_type": "data_pipeline" if "api" in t or "data" in t else "tree_graph" if "tree" in t or "graph" in t else "decision_gate",
                 "common_misconception": "Speed comes from micro-optimizing low-level syntax.",
-                "accurate_reality": "Architectural alignment and asymptotic complexity outperform compiler flags every time."
+                "accurate_reality": "Architectural alignment and asymptotic complexity outperform compiler flags every time.",
+                "pro_tip": "Design data structures for CPU cache line alignment to maximize memory throughput."
             }
 
     def _get_default_code_snippets(self, topic: str) -> Dict[str, Any]:
@@ -684,8 +821,78 @@ class NemotronClient:
                 "main_code": "import numpy as np\nx, y = np.meshgrid(np.linspace(-3, 3, 50), np.linspace(-3, 3, 50))\nr = np.sqrt(x**2 + y**2) + 1e-5\nz = np.sin(r) / r\nax.plot_surface(x, y, z, cmap='viridis')",
                 "highlight_line": 4,
                 "annotation": "calculate 3D radial ripple height",
+                "terminal_output": "> Mesh grid generated: 2500 vertices [OK]",
+                "variable_name": "z",
+                "variable_value": "Tensor(50, 50)",
+                "eval_result": "PROJECTED",
                 "inefficient_before": "# Flat 2D cross section\ny = np.sin(x) / x",
                 "optimized_after": "# Elevated 3D spatial tensor\nz = np.sin(np.sqrt(x**2 + y**2)) / r"
+            }
+        elif any(k in t for k in ["oop", "object", "class", "inherit", "polymorph", "encapsulat"]):
+            if lang == "java":
+                return {
+                    "filename": "User.java",
+                    "main_code": "public class User {\n    private final String id;\n    public User(String id) { this.id = id; }\n    public void authenticate() {\n        System.out.println(\"User: \" + id + \" verified\");\n    }\n}",
+                    "highlight_line": 4,
+                    "annotation": "encapsulated method with virtual dispatch",
+                    "terminal_output": "> User: #usr_981 verified [HEAP OK]",
+                    "variable_name": "user",
+                    "variable_value": "User@0x7A4F",
+                    "eval_result": "INSTANTIATED",
+                    "inefficient_before": "// Global unstructured state\nString[] userIds = new String[100];",
+                    "optimized_after": "// Encapsulated domain model\npublic class User { private final String id; }"
+                }
+            elif lang in ("javascript", "typescript"):
+                return {
+                    "filename": "User.ts",
+                    "main_code": "class User {\n  constructor(private readonly id: string) {}\n  authenticate(): boolean {\n    console.log(`User ${this.id} verified`);\n    return true;\n  }\n}",
+                    "highlight_line": 3,
+                    "annotation": "class instance with private field encapsulation",
+                    "terminal_output": "> User usr_981 verified [OK]",
+                    "variable_name": "user",
+                    "variable_value": "User { id: 'usr_981' }",
+                    "eval_result": "INSTANTIATED",
+                    "inefficient_before": "function auth(id) { /* no encapsulation */ }",
+                    "optimized_after": "class User { constructor(private id: string) {} }"
+                }
+            else:
+                return {
+                    "filename": "user.py",
+                    "main_code": "class User:\n    def __init__(self, user_id: str):\n        self._id = user_id\n    def authenticate(self) -> bool:\n        print(f'User {self._id} verified')\n        return True",
+                    "highlight_line": 4,
+                    "annotation": "encapsulated method binding instance state",
+                    "terminal_output": "> User usr_981 verified [OK]",
+                    "variable_name": "user",
+                    "variable_value": "<User object at 0x7f8a>",
+                    "eval_result": "INSTANTIATED",
+                    "inefficient_before": "users = {}\ndef auth(uid): pass",
+                    "optimized_after": "class User: def __init__(self, uid): self._id = uid"
+                }
+        elif any(k in t for k in ["db", "sql", "database", "index", "query"]):
+            return {
+                "filename": "query.sql",
+                "main_code": "-- B-Tree Index Query\nCREATE INDEX idx_user_id ON users(id);\nSELECT name, email FROM users\nWHERE id = 'usr_981'\nLIMIT 1;",
+                "highlight_line": 3,
+                "annotation": "uses B-Tree index: 0.1ms vs 45ms full table scan",
+                "terminal_output": "> Query executed in 0.12ms (Index Scan) [OK]",
+                "variable_name": "rows",
+                "variable_value": "1 row (id=usr_981)",
+                "eval_result": "INDEX_SEEK",
+                "inefficient_before": "-- Full table scan\nSELECT * FROM users WHERE id = 'usr_981';",
+                "optimized_after": "-- Indexed lookup\nSELECT name, email FROM users WHERE id = ?;"
+            }
+        elif any(k in t for k in ["api", "rest", "http", "network", "async"]):
+            return {
+                "filename": "client.py",
+                "main_code": "async def fetch_profile(user_id: str):\n    async with httpx.AsyncClient() as client:\n        resp = await client.get(f'/users/{user_id}')\n        return resp.json()",
+                "highlight_line": 3,
+                "annotation": "non-blocking await yields execution to event loop",
+                "terminal_output": "> HTTP 200 OK (12ms RTT) [RESOLVED]",
+                "variable_name": "resp",
+                "variable_value": "HTTP 200 OK",
+                "eval_result": "COMMITTED",
+                "inefficient_before": "# Blocking synchronous I/O\nresp = requests.get(url)",
+                "optimized_after": "# Non-blocking async I/O\nresp = await client.get(url)"
             }
         elif "if" in t or "condition" in t or "branch" in t:
             if lang == "java":
@@ -694,26 +901,12 @@ class NemotronClient:
                     "main_code": "int score = 85;\nif (score >= 90) {\n    System.out.println(\"Grade: A\");\n} else {\n    System.out.println(\"Grade: B\");\n}",
                     "highlight_line": 2,
                     "annotation": "evaluates boolean condition in O(1)",
+                    "terminal_output": "> Grade: B (Condition evaluated)",
+                    "variable_name": "score",
+                    "variable_value": "85",
+                    "eval_result": "BRANCH: FALSE",
                     "inefficient_before": "// Redundant nested checks\nif (score >= 90) System.out.println(\"A\");\nif (score < 90) System.out.println(\"B\");",
                     "optimized_after": "// Direct if-else branch\nif (score >= 90) return \"A\";\nelse return \"B\";"
-                }
-            elif lang in ("javascript", "typescript"):
-                return {
-                    "filename": "validate.ts",
-                    "main_code": "const isValid = status === 'active';\nif (isValid) {\n  dispatch({ type: 'CONFIRM' });\n} else {\n  dispatch({ type: 'REJECT' });\n}",
-                    "highlight_line": 2,
-                    "annotation": "conditional branch based on boolean flag",
-                    "inefficient_before": "if (status === 'active') { dispatch(); }\nif (status !== 'active') { error(); }",
-                    "optimized_after": "status === 'active' ? dispatch() : error();"
-                }
-            elif lang == "cpp":
-                return {
-                    "filename": "branch.cpp",
-                    "main_code": "if (temperature > max_safe_temp) {\n    shutdown_reactor();\n} else {\n    maintain_nominal_flow();\n}",
-                    "highlight_line": 1,
-                    "annotation": "deterministic hardware safety guard",
-                    "inefficient_before": "if (temp > max) shutdown();\nif (temp <= max) flow();",
-                    "optimized_after": "temp > max ? shutdown() : flow();"
                 }
             else:
                 return {
@@ -721,6 +914,10 @@ class NemotronClient:
                     "main_code": "if user.is_authenticated and user.has_token:\n    grant_elevated_access(user)\nelse:\n    raise PermissionDenied(\"Forbidden\")",
                     "highlight_line": 1,
                     "annotation": "short-circuit logical conjunction",
+                    "terminal_output": "> Access granted: elevated privilege [OK]",
+                    "variable_name": "user.is_authenticated",
+                    "variable_value": "True",
+                    "eval_result": "TRUE (1)",
                     "inefficient_before": "if user.is_authenticated:\n    if user.has_token: grant()",
                     "optimized_after": "if user.is_authenticated and user.has_token:\n    grant()"
                 }
@@ -731,6 +928,10 @@ class NemotronClient:
                     "main_code": "for (int i = 0; i < items.length; i++) {\n    processItem(items[i]);\n}",
                     "highlight_line": 1,
                     "annotation": "sequential array traversal",
+                    "terminal_output": "> Processed 100 items [100% OK]",
+                    "variable_name": "i",
+                    "variable_value": "99",
+                    "eval_result": "TERMINATED",
                     "inefficient_before": "int i = 0;\nwhile (true) { if (i >= n) break; i++; }",
                     "optimized_after": "for (Item item : items) processItem(item);"
                 }
@@ -740,6 +941,10 @@ class NemotronClient:
                     "main_code": "for index, item in enumerate(dataset):\n    transformed = apply_filter(item)\n    results.append(transformed)",
                     "highlight_line": 1,
                     "annotation": "vectorized sequential iterator",
+                    "terminal_output": "> Batch transform: 100 items [OK]",
+                    "variable_name": "index",
+                    "variable_value": "99",
+                    "eval_result": "COMPLETE",
                     "inefficient_before": "i = 0\nwhile i < len(dataset): process(dataset[i]); i += 1",
                     "optimized_after": "results = [apply_filter(x) for x in dataset]"
                 }
@@ -749,6 +954,10 @@ class NemotronClient:
                 "main_code": "def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)",
                 "highlight_line": 2,
                 "annotation": "base case halts stack growth",
+                "terminal_output": "> Base case reached: factorial(1) = 1 [UNWOUND]",
+                "variable_name": "n",
+                "variable_value": "1",
+                "eval_result": "BASE_HIT",
                 "inefficient_before": "# Unbounded recursion\ndef blow_stack(n):\n    return blow_stack(n - 1)",
                 "optimized_after": "# Guarded base case\nif n <= 1: return 1\nreturn n * factorial(n - 1)"
             }
@@ -759,6 +968,10 @@ class NemotronClient:
                 "main_code": f"// Core logic for {topic}\nvoid execute_{lang}() {{\n    run_deterministic_operation();\n}}",
                 "highlight_line": 2,
                 "annotation": f"execute {topic} logic",
+                "terminal_output": f"> {topic}: operation resolved successfully [OK]",
+                "variable_name": "state",
+                "variable_value": "ACTIVE",
+                "eval_result": "RESOLVED",
                 "inefficient_before": "// Naive implementation\nexecute_slow();",
                 "optimized_after": "// Optimized implementation\nexecute_fast();"
             } if lang in ("java", "cpp") else {
@@ -766,6 +979,10 @@ class NemotronClient:
                 "main_code": f"# Implementation for {topic}\ndef process_{lang}():\n    return compute_optimized_pipeline()",
                 "highlight_line": 2,
                 "annotation": f"execute {topic} logic",
+                "terminal_output": f"> {topic}: operation resolved successfully [OK]",
+                "variable_name": "state",
+                "variable_value": "ACTIVE",
+                "eval_result": "RESOLVED",
                 "inefficient_before": "# Naive implementation\nslow_pipeline()",
                 "optimized_after": "# Optimized implementation\nfast_pipeline()"
             }

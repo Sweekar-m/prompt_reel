@@ -22,6 +22,9 @@ export const DiagramScene: React.FC<{
   const timeComplexity = (elems.time_complexity as string) || "O(1) Constant Time";
   const proTip = (elems.pro_tip as string) || "Keep branch patterns predictable to maximize CPU instruction throughput.";
 
+  const metricLabel = (elems.metric_label as string) || "SYSTEM THROUGHPUT";
+  const metricVal = (elems.metric_val as string) || "0.35 ns (1 CYCLE)";
+
   const enterSpring = spring({
     frame,
     fps,
@@ -215,10 +218,10 @@ export const DiagramScene: React.FC<{
           }}
         >
           <div style={{ fontFamily: monoFont, fontSize: 13, color: toRgba(palette.subtext, 0.8) }}>
-            INSTRUCTION LATENCY
+            {metricLabel.toUpperCase()}
           </div>
           <div style={{ fontFamily: monoFont, fontSize: 26, fontWeight: 800, color: "#10b981", marginTop: 4 }}>
-            0.35 ns (1 CYCLE)
+            {metricVal}
           </div>
         </div>
       </div>
