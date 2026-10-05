@@ -1,0 +1,27 @@
+{
+  "id": "monochrome",
+  "name": "Monochrome Precision",
+  "description": "Pure black, pure white, and targeted grayscale tonality for mathematical elegance.",
+  "palette": [
+    "#050505",
+    "#FFFFFF",
+    "#A3A3A3",
+    "#404040",
+    "#171717"
+  ],
+  "typography": [
+    "Inter",
+    "JetBrains Mono"
+  ],
+  "grid": "micro_ruler_subdivision",
+  "spacing": "balanced_standard",
+  "shapes": "fine_1px_wireframe",
+  "shadows": "minimal_ambient",
+  "lighting": "high_contrast_monochrome",
+  "texture": "stochastic_halftone_dot",
+  "transitions": "linear_curtain_reveal",
+  "animation_vocabulary": "precision_vector_draw",
+  "camera": "slow_tracking_shot",
+  "particle_behavior": "coordinate_dots",
+  "sound_direction": "sterile_sine_tone_ticks"
+}

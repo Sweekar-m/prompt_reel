@@ -1,0 +1,67 @@
+# Environment Variables & Secrets (CRITICAL)
+.env
+.env*.local
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+
+# Node & Remotion
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+remotion/node_modules/
+remotion/build/
+remotion/projects/
+remotion/.remotion/
+
+# Media & Render Artifacts
+projects/
+output/
+output_audio/
+temp/
+temp_audio/
+scratch/
+non_existent_dir/
+*.mp4
+*.wav
+*.mp3
+*.aac
+*.jpg
+*.jpeg
+*.png
+!assets/**
+!web/**
+
+# Logs
+*.log
+server.log
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

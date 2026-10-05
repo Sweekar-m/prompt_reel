@@ -1,0 +1,27 @@
+{
+  "id": "swiss_grid",
+  "name": "International Swiss Grid",
+  "description": "Strict mathematical ratios, objective modernist layout, timeless European clarity.",
+  "palette": [
+    "#F4F4F6",
+    "#1E1E24",
+    "#E63946",
+    "#A0AAB2",
+    "#FFFFFF"
+  ],
+  "typography": [
+    "Inter",
+    "Space Grotesk"
+  ],
+  "grid": "12_column_golden_ratio",
+  "spacing": "strict_mathematical",
+  "shapes": "pure_rational_rectangles",
+  "shadows": "none",
+  "lighting": "diffused_studio_softbox",
+  "texture": "clean_vector",
+  "transitions": "cross_axial_slide",
+  "animation_vocabulary": "calibrated_linear_glide",
+  "camera": "isometric_pan",
+  "particle_behavior": "none",
+  "sound_direction": "clean_synthetic_marimba"
+}

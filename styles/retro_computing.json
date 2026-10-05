@@ -1,0 +1,27 @@
+{
+  "id": "retro_computing",
+  "name": "Retro Computing 1984",
+  "description": "Beige plastic enclosures, dithered shading, nostalgic 8-bit visual architecture.",
+  "palette": [
+    "#2B2B38",
+    "#E6DFD3",
+    "#8C92AC",
+    "#4D536B",
+    "#D1C7B7"
+  ],
+  "typography": [
+    "IBM Plex Mono",
+    "Inter"
+  ],
+  "grid": "bitmap_matrix_320x240",
+  "spacing": "chunky_fixed",
+  "shapes": "bevel_window_frames",
+  "shadows": "1bit_dithered_shadow",
+  "lighting": "ambient_office_fluorescent",
+  "texture": "ordered_bayer_dither",
+  "transitions": "checkerboard_dissolve",
+  "animation_vocabulary": "stepped_12fps_snap",
+  "camera": "straight_on_display",
+  "particle_behavior": "pixel_sparkles",
+  "sound_direction": "chiptune_square_wave_arp"
+}

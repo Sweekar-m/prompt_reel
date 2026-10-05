@@ -1,0 +1,27 @@
+{
+  "id": "editorial",
+  "name": "Warm Editorial",
+  "description": "Warm cream, burnt orange, obsidian typography, disciplined editorial magazine grid.",
+  "palette": [
+    "#FBF8F3",
+    "#FF5500",
+    "#111215",
+    "#6A6D75",
+    "#EFE9DE"
+  ],
+  "typography": [
+    "Playfair Display",
+    "Space Grotesk"
+  ],
+  "grid": "swiss_columns_rule",
+  "spacing": "generous_airy",
+  "shapes": "sharp_rectangle",
+  "shadows": "soft_paper_bleed",
+  "lighting": "soft_ambient_fill",
+  "texture": "fine_paper_grain",
+  "transitions": "clean_hard_cut",
+  "animation_vocabulary": "smooth_typographic_slide",
+  "camera": "steady_editorial_zoom",
+  "particle_behavior": "subtle_ink_specks",
+  "sound_direction": "minimal_acoustic_click"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "blueprint",
+  "name": "Architectural Cyan Blueprint",
+  "description": "Engineering cyanotype blue, white technical compass marks, coordinate callouts.",
+  "palette": [
+    "#0B3C5D",
+    "#FFFFFF",
+    "#328CC1",
+    "#D9B310",
+    "#1D2731"
+  ],
+  "typography": [
+    "Space Grotesk",
+    "IBM Plex Mono"
+  ],
+  "grid": "cyanotype_drafting_grid",
+  "spacing": "engineering_standard",
+  "shapes": "schematic_blocks_and_buses",
+  "shadows": "none",
+  "lighting": "chemical_diazo_exposure",
+  "texture": "blueprint_grain_and_fold_crease",
+  "transitions": "horizontal_drafting_ruler_slide",
+  "animation_vocabulary": "schematic_wire_trace_lightup",
+  "camera": "cad_orthographic_zoom",
+  "particle_behavior": "dimension_arrow_markers",
+  "sound_direction": "drafting_plotter_stepper_motor"
+}

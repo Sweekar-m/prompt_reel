@@ -1,0 +1,27 @@
+{
+  "id": "minimal",
+  "name": "Minimal Stark",
+  "description": "Monochrome restraint, pure functional clarity, zero decorative clutter.",
+  "palette": [
+    "#000000",
+    "#FFFFFF",
+    "#737373",
+    "#262626",
+    "#171717"
+  ],
+  "typography": [
+    "Inter",
+    "Source Code Pro"
+  ],
+  "grid": "pure_centerline",
+  "spacing": "expansive",
+  "shapes": "pure_geometry",
+  "shadows": "none",
+  "lighting": "uniform_ambient",
+  "texture": "flat_matte",
+  "transitions": "instant_cut",
+  "animation_vocabulary": "fade_in_position_lock",
+  "camera": "locked_monumental",
+  "particle_behavior": "none",
+  "sound_direction": "pure_low_frequency_sub"
+}

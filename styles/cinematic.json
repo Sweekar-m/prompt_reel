@@ -1,0 +1,27 @@
+{
+  "id": "cinematic",
+  "name": "Cinematic Tech 2.5D",
+  "description": "Anamorphic flare, shallow depth of field, dramatic spotlight focusing on key instructions.",
+  "palette": [
+    "#090B10",
+    "#38BDF8",
+    "#F59E0B",
+    "#E2E8F0",
+    "#131824"
+  ],
+  "typography": [
+    "Space Grotesk",
+    "JetBrains Mono"
+  ],
+  "grid": "cinematic_rule_of_thirds",
+  "spacing": "proportional_golden",
+  "shapes": "floating_layered_plates",
+  "shadows": "deep_diffuse_drop",
+  "lighting": "dramatic_anamorphic_key",
+  "texture": "35mm_film_grain",
+  "transitions": "lens_blur_dissolve",
+  "animation_vocabulary": "inertia_damped_push",
+  "camera": "slow_creeping_push_in",
+  "particle_behavior": "floating_bokeh_circles",
+  "sound_direction": "low_cinematic_sub_braam"
+}

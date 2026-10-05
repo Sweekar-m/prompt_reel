@@ -1,0 +1,27 @@
+{
+  "id": "holographic",
+  "name": "Holographic HUD",
+  "description": "Transparent floating telemetry, iridescent refraction, multi-planar spatial layout.",
+  "palette": [
+    "#040714",
+    "#00FFA3",
+    "#00B8FF",
+    "#FF00E5",
+    "#0A122C"
+  ],
+  "typography": [
+    "Space Grotesk",
+    "Source Code Pro"
+  ],
+  "grid": "polar_radar_coordinate",
+  "spacing": "concentric_rings",
+  "shapes": "segmented_circular_arcs",
+  "shadows": "refractive_chromatic_aberration",
+  "lighting": "internal_luminescence",
+  "texture": "fresnel_diffraction_grating",
+  "transitions": "quantum_phase_wipe",
+  "animation_vocabulary": "rotational_spin_and_align",
+  "camera": "3d_parallax_gimbal",
+  "particle_behavior": "orbital_data_nodes",
+  "sound_direction": "resonant_shimmer_and_glissando"
+}

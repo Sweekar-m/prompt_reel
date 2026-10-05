@@ -1,0 +1,27 @@
+{
+  "id": "glass_ui",
+  "name": "Spatial Glass UI",
+  "description": "Multi-plane frosted acrylic, realistic light refraction, translucent floating dashboards.",
+  "palette": [
+    "#0D1117",
+    "#58A6FF",
+    "#7EE787",
+    "#C9D1D9",
+    "#161B22"
+  ],
+  "typography": [
+    "Inter",
+    "JetBrains Mono"
+  ],
+  "grid": "floating_card_stack",
+  "spacing": "card_pad_generous",
+  "shapes": "rounded_glass_tile_24px",
+  "shadows": "diffuse_glass_dispersion",
+  "lighting": "multi_source_refractive",
+  "texture": "micro_etched_matte_glass",
+  "transitions": "depth_z_axis_push",
+  "animation_vocabulary": "spring_physics_card_tilt",
+  "camera": "spatial_depth_tilt",
+  "particle_behavior": "soft_luminescent_bubbles",
+  "sound_direction": "glass_tap_and_translucent_chime"
+}

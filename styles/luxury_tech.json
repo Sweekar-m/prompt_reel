@@ -1,0 +1,27 @@
+{
+  "id": "luxury_tech",
+  "name": "Luxury Tech Obsidian & Gold",
+  "description": "Matte black ceramic, subtle champagne gold specular glints, Apple launch event premium aura.",
+  "palette": [
+    "#0C0D0E",
+    "#D4AF37",
+    "#F5E6BE",
+    "#5A5852",
+    "#181A1D"
+  ],
+  "typography": [
+    "Manrope",
+    "JetBrains Mono"
+  ],
+  "grid": "golden_rectangle_subdivision",
+  "spacing": "luxury_spacious",
+  "shapes": "curved_fillet_chamfers",
+  "shadows": "heavy_occlusion_feather",
+  "lighting": "specular_edge_highlight_glint",
+  "texture": "matte_pvd_coating",
+  "transitions": "luxurious_film_fade",
+  "animation_vocabulary": "silky_exponential_decel",
+  "camera": "macro_lens_gliding_pan",
+  "particle_behavior": "gold_dust_micro_particles",
+  "sound_direction": "deep_sub_and_crystal_resonance"
+}

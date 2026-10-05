@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REEL STUDIO — AI-Native Motion Graphics Studio</title>
+  <!-- Google Fonts: Space Grotesk, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+            },
+            studio: {
+              base: '#0B0C10',
+              surface: '#12141C',
+              card: '#181B26',
+              border: 'rgba(255, 255, 255, 0.08)',
+              hover: 'rgba(255, 255, 255, 0.12)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0C10;
+      color: #E2E8F0;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0B0C10;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #272A38;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #3B4054;
+    }
+    .phone-shadow {
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(34, 197, 94, 0.15);
+    }
+    .subtle-glass {
+      background: rgba(18, 20, 28, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#0B0C10] text-zinc-100 selection:bg-brand-500 selection:text-black">
+
+  <!-- TOP APP BAR -->
+  <header class="sticky top-0 z-50 h-16 border-b border-white/10 subtle-glass flex items-center justify-between px-6 lg:px-10">
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2.5 cursor-pointer" onclick="navigate('home')">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-500 to-emerald-300 flex items-center justify-center shadow-lg shadow-brand-500/20">
+          <i data-lucide="clapperboard" class="w-4 h-4 text-black font-black"></i>
+        </div>
+        <div>
+          <span class="font-display font-bold text-lg tracking-tight text-white">REEL STUDIO</span>
+          <span class="text-[10px] ml-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">AI 2.0</span>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-1 pl-8">
+        <button onclick="navigate('home')" id="nav-home" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-white bg-white/10">Studio</button>
+        <button onclick="navigate('chat')" id="nav-chat" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-emerald-400 hover:text-white hover:bg-emerald-500/10 flex items-center space-x-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>AI Director</span></button>
+        <button onclick="navigate('trends')" id="nav-trends" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">Trends</button>
+        <button onclick="navigate('templates')" id="nav-templates" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">Directives</button>
+        <button onclick="navigate('create')" id="nav-create" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">Pipeline</button>
+        <button onclick="navigate('storyboard')" id="nav-storyboard" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">Storyboard</button>
+        <button onclick="navigate('projects')" id="nav-projects" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">History</button>
+      </nav>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2 text-xs font-mono text-zinc-400 bg-zinc-900/80 px-3 py-1.5 rounded-full border border-white/5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="system-status">NVIDIA NIM / Local Engine Ready</span>
+      </div>
+      <button onclick="navigate('create')" class="flex items-center space-x-2 px-4 py-1.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-400 text-black rounded-lg font-display transition-all shadow-md shadow-emerald-500/20 active:scale-95">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        <span>New Reel</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER WITH DYNAMIC VIEWS -->
+  <main class="flex-1 w-full max-w-7xl mx-auto p-6 lg:p-10">
+
+    <!-- ==================== VIEW 1: HOME ==================== -->
+    <div id="view-home" class="space-y-12">
+      <!-- HERO PROMPT SECTION -->
+      <div class="relative py-12 px-8 rounded-3xl bg-gradient-to-b from-[#161822] to-[#10121A] border border-white/10 overflow-hidden">
+        <div class="absolute -right-20 -top-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-20 -bottom-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-3xl mx-auto text-center space-y-4">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-emerald-400">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Deterministic AI Motion Graphics Studio</span>
+          </div>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight text-white leading-tight">
+            Turn an idea into a <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">cinematic technical Reel.</span>
+          </h1>
+          <p class="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto">
+            100+ unique visual identities. Zero repetitive templates. Verified technical truth.
+          </p>
+        </div>
+
+        <!-- LARGE INPUT BOX -->
+        <div class="max-w-2xl mx-auto mt-8 relative">
+          <div class="relative rounded-2xl bg-[#0B0C10] border border-white/15 focus-within:border-emerald-500/80 transition-all p-2 shadow-2xl">
+            <textarea id="hero-prompt" rows="3" class="w-full bg-transparent px-4 py-3 text-lg text-white placeholder-zinc-500 focus:outline-none resize-none font-sans" placeholder="What do you want to explain? (e.g. Explain how recursion works visually)"></textarea>
+            
+            <div class="flex items-center justify-between pt-2 px-2 border-t border-white/5">
+              <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>Fast 30fps preview or 60fps master</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="surpriseMe()" class="px-4 py-2 text-sm font-medium rounded-xl text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all">
+                  🎲 Surprise Me
+                </button>
+                <button onclick="startFromHome()" class="px-6 py-2 text-sm font-medium rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-semibold transition-all shadow-lg shadow-emerald-500/25 flex items-center space-x-2 active:scale-95">
+                  <span>Generate Reel</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CRAZY PROMPT QUICK CHIPS -->
+          <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <span class="text-xs font-mono text-zinc-500 mr-1">Trending Formats:</span>
+            <button onclick="startMathReel('Euler Complex 3D Spiral Helix')" class="px-3 py-1 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-mono transition-all flex items-center space-x-1.5">
+              <span>📐 2D ➔ 3D Math Reel</span>
+            </button>
+            <button onclick="startMathReel('Circular 3D Sinc Ripple Surface')" class="px-3 py-1 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-mono transition-all flex items-center space-x-1.5">
+              <span>🌀 Sinc Surface 3D</span>
+            </button>
+            <button onclick="useTopic('Why CPU Branch Prediction Fails on Unsorted Data')" class="px-3 py-1 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono transition-all">
+              <span>⚡ CPU Branch Prediction Shock</span>
+            </button>
+            <button onclick="navigate('chat')" class="px-3 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-semibold transition-all flex items-center space-x-1">
+              <i data-lucide="sparkles" class="w-3 h-3"></i>
+              <span>Chat with AI Director</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRENDING RIGHT NOW SECTION -->
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2.5">
+            <span class="text-xl font-display font-bold text-white tracking-tight">TRENDING RIGHT NOW</span>
+            <span class="px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">Live Velocity</span>
+          </div>
+          <button onclick="navigate('trends')" class="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center space-x-1">
+            <span>Explore all trends</span>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div id="home-trending-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW: AI DIRECTOR CHAT ==================== -->
+    <div id="view-chat" class="hidden space-y-6">
+      <div class="border-b border-white/10 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-400 mb-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>NVIDIA NIM Llama 3.2 Vision • Active Live Engine</span>
+          </div>
+          <h2 class="text-3xl font-display font-bold text-white tracking-tight">AI Creative Director</h2>
+          <p class="text-sm text-zinc-400 mt-1">Chat with AI to brainstorm crazy video concepts, 2D-to-3D math transitions, and dynamic viral hooks.</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="clearChat()" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all">Clear Chat</button>
+          <button onclick="sendQuickPrompt('Create an insane 2D to 3D math reel of Euler\'s formula where camera rotates 60 degrees into a 3D helix')" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all flex items-center space-x-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Inspire Crazy Math Reel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CHAT INTERFACE CONTAINER -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- CHAT CONVERSATION WINDOW (8 cols) -->
+        <div class="lg:col-span-8 flex flex-col h-[680px] rounded-3xl bg-[#10121A] border border-white/10 overflow-hidden subtle-glass">
+          <!-- MESSAGES SCROLL AREA -->
+          <div id="chat-messages" class="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-6">
+            <!-- Initial greeting will be inserted by JS -->
+          </div>
+
+          <!-- TYPING INDICATOR -->
+          <div id="chat-typing" class="hidden px-6 py-2.5 text-xs font-mono text-emerald-400 flex items-center space-x-2 bg-black/40 border-t border-white/5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>AI Director is formulating camera choreography & viral hook...</span>
+          </div>
+
+          <!-- QUICK SUGGESTIONS -->
+          <div id="chat-suggestions" class="p-3 border-t border-white/5 bg-zinc-950/60 flex flex-wrap gap-2">
+            <!-- Dynamic suggestion pills -->
+          </div>
+
+          <!-- INPUT FORM -->
+          <div class="p-4 border-t border-white/10 bg-[#0B0C10] flex items-center space-x-3">
+            <input type="text" id="chat-input" onkeydown="if(event.key === 'Enter') sendChatMessage()" placeholder="Describe your vision (e.g. 'Make a 2D math curve tilt into an orbiting 3D mesh surface with cyberpunk colors')..." class="flex-1 bg-zinc-900 border border-white/10 px-4 py-3 rounded-2xl text-white text-sm focus:outline-none focus:border-emerald-500 font-sans" />
+            <button onclick="sendChatMessage()" id="chat-send-btn" class="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-sm transition-all flex items-center space-x-1.5 shadow-lg shadow-emerald-500/20 active:scale-95">
+              <span>Direct</span>
+              <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: CREATIVE BLUEPRINT SIDEBAR (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+          <div class="p-6 rounded-3xl bg-[#10121A] border border-white/10 space-y-5 subtle-glass">
+            <h3 class="text-base font-display font-semibold text-white flex items-center space-x-2">
+              <i data-lucide="compass" class="w-4 h-4 text-emerald-400"></i>
+              <span>Director Capabilities</span>
+            </h3>
+
+            <div class="space-y-3 text-xs font-sans text-zinc-300">
+              <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
+                <span class="font-bold text-emerald-400 font-mono">📐 2D to 3D Math Reels</span>
+                <p class="text-zinc-400">Generates 2D Cartesian function cross-sections that smoothly tilt & elevate into 3D isometric parametric surface wireframes with real-time camera telemetry.</p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
+                <span class="font-bold text-amber-400 font-mono">🔥 High-Retention Viral Hooks</span>
+                <p class="text-zinc-400">Creates tailored, non-repetitive viral hooks designed for first 3-second retention (shock, contradiction, myth debunking).</p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
+                <span class="font-bold text-cyan-400 font-mono">⚡ 1-Click Autonomous Render</span>
+                <p class="text-zinc-400">Accept any blueprint proposed by the AI Director to immediately assemble the storyboard, synthesize voice, and render Remotion MP4.</p>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-white/5">
+              <span class="text-[11px] font-mono text-zinc-500 block mb-2">QUICK LAUNCH RECIPES:</span>
+              <div class="space-y-1.5">
+                <button onclick="sendQuickPrompt('Create an Instagram viral reel showing a 2D damped sine wave that smoothly elevates into a 3D circular sinc ripple surface with rotating camera')" class="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-all flex items-center justify-between">
+                  <span>Sinc Ripple Surface 3D</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-emerald-400"></i>
+                </button>
+                <button onclick="sendQuickPrompt('Make a crazy video showing Euler\'s identity on a 2D complex circle, then the camera pitches 55 degrees into a 3D helical spiral')" class="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-all flex items-center justify-between">
+                  <span>Euler\'s 3D Complex Helix</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-emerald-400"></i>
+                </button>
+                <button onclick="sendQuickPrompt('Direct a high-energy video on why CPU branch prediction crashes on unsorted arrays with brutalist high contrast graphics')" class="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-all flex items-center justify-between">
+                  <span>CPU Branch Prediction Crash</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-emerald-400"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 2: TRENDS ==================== -->
+    <div id="view-trends" class="hidden space-y-10">
+      <div class="border-b border-white/10 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-3xl font-display font-bold text-white tracking-tight">Trend Discovery</h2>
+          <p class="text-sm text-zinc-400 mt-1">Real developer signals, GitHub velocity, and motion graphics trends collected autonomously.</p>
+        </div>
+        <div class="flex items-center space-x-2 bg-zinc-900/60 p-1 rounded-xl border border-white/10">
+          <button onclick="filterTrends('all')" class="trend-tab active px-3.5 py-1.5 text-xs font-medium rounded-lg bg-white/10 text-white">All Signals</button>
+          <button onclick="filterTrends('ai')" class="trend-tab px-3.5 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-white">AI & Systems</button>
+          <button onclick="filterTrends('styles')" class="trend-tab px-3.5 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-white">Visual Styles</button>
+          <button onclick="filterTrends('hooks')" class="trend-tab px-3.5 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-white">Viral Hooks</button>
+        </div>
+      </div>
+
+      <div id="trends-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 3: TEMPLATES / DIRECTIVES ==================== -->
+    <div id="view-templates" class="hidden space-y-10">
+      <div class="border-b border-white/10 pb-6">
+        <h2 class="text-3xl font-display font-bold text-white tracking-tight">Creative Directives</h2>
+        <p class="text-sm text-zinc-400 mt-1">15 cohesive design styles. Not static templates — algorithmic creative languages.</p>
+      </div>
+
+      <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 4: CREATE / PIPELINE ==================== -->
+    <div id="view-create" class="hidden space-y-8">
+      <div class="border-b border-white/10 pb-6 flex items-center justify-between">
+        <div>
+          <h2 class="text-3xl font-display font-bold text-white tracking-tight">Reel Studio Pipeline</h2>
+          <p class="text-sm text-zinc-400 mt-1">Configure creative direction or launch the 10-step autonomous pipeline.</p>
+        </div>
+        <div id="active-reel-badge" class="hidden px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono">
+          Reel ID: <span id="active-reel-id">none</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- LEFT: CREATIVE CONTROLS (5 cols) -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="p-6 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-5">
+            <h3 class="text-base font-display font-semibold text-white flex items-center space-x-2">
+              <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i>
+              <span>Creative Controls</span>
+            </h3>
+
+            <!-- TOPIC INPUT -->
+            <div>
+              <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Topic / Concept</label>
+              <input type="text" id="create-topic" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="e.g. Why CPU Branch Prediction Fails">
+            </div>
+
+            <!-- STYLE DIRECTIVE SELECTOR -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-mono text-zinc-400 uppercase">Aesthetic Directive</label>
+                <button onclick="randomizeStyle()" class="text-xs text-emerald-400 hover:underline">Surprise</button>
+              </div>
+              <select id="create-style" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500">
+                <option value="cinematic">Cinematic Tech (2.5D, dramatic lighting)</option>
+                <option value="editorial">Editorial (Warm cream/orange, serif/mono)</option>
+                <option value="brutalist">Brutalist (High contrast, aggressive grid)</option>
+                <option value="swiss_grid">Swiss Grid (Clean, minimalist typographic order)</option>
+                <option value="cyberpunk">Cyberpunk (Electric cyan, matrix scans)</option>
+                <option value="terminal">Terminal Hacker (Pure monospace green phosphor)</option>
+                <option value="blueprint">Technical Blueprint (Architectural grid lines)</option>
+                <option value="luxury_tech">Luxury Tech (Matte obsidian and brushed gold)</option>
+                <option value="glass_ui">Glass UI (Translucent frosted card layers)</option>
+                <option value="minimal">Minimal (Stark monochrome focus)</option>
+              </select>
+            </div>
+
+            <!-- HOOK ARCHETYPE -->
+            <div>
+              <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Hook Archetype</label>
+              <select id="create-hook" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500">
+                <option value="cold_open">The Assertive Cold Open ("Your CPU is lying to you.")</option>
+                <option value="contradiction">The Shock Contradiction ("This looks slow. It is 100x faster.")</option>
+                <option value="visual_shock">Visual Shock (Exploding stack frame)</option>
+                <option value="code_first">Mysterious Code Dissection</option>
+                <option value="myth_debunk">Common Myth Debunk</option>
+                <option value="question">Provocative Question</option>
+              </select>
+            </div>
+
+            <!-- VOICE PERSONA -->
+            <div>
+              <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Voice Persona</label>
+              <select id="create-voice" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500">
+                <option value="energetic_explainer">Energetic Explainer (Christopher Neural +20%)</option>
+                <option value="theatrical_hacker">Theatrical Hacker Noir (Deep, deliberate pacing)</option>
+                <option value="calm_architect">Calm Systems Architect (Guy Neural, measured)</option>
+                <option value="young_technical">Young Technical Founder (Jenny Neural +15%)</option>
+              </select>
+            </div>
+
+            <!-- SOUNDTRACK / DYNAMIC BGM -->
+            <div>
+              <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Soundtrack / Dynamic BGM</label>
+              <select id="create-bgm" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500">
+                <option value="auto">🎵 Auto AI-Dynamic (Matches topic & mood)</option>
+                <option value="dark_math">📐 Dark Math & Geometry (88 BPM • Minor bells & sub braams)</option>
+                <option value="cinematic">🎬 Cinematic Hans Zimmer Pulse (86 BPM • Sub braams & cello)</option>
+                <option value="lofi_chill">☕ Lo-Fi Coding & Math Beat (84 BPM • Vintage Rhodes & swing)</option>
+                <option value="phonk_drift">🏎️ Phonk Tech Drift (138 BPM • 808 cowbells & trap hats)</option>
+                <option value="retro_chiptune">👾 8-Bit Arcade Computing (128 BPM • Square waves & noise snare)</option>
+                <option value="cyberpunk">⚡ Cyberpunk Electro (126 BPM • Saw leads & rolling bass)</option>
+                <option value="minimal_electronic">✨ Minimal Clean Tech (118 BPM • Warm plucks & sine sub)</option>
+              </select>
+            </div>
+
+            <!-- FAST PREVIEW TOGGLE -->
+            <div class="flex items-center justify-between pt-2 border-t border-white/5">
+              <div>
+                <div class="text-sm font-medium text-white">⚡ Fast Render Mode</div>
+                <div class="text-xs text-zinc-500">540×960 at ~30fps for ultra-fast previews</div>
+              </div>
+              <input type="checkbox" id="create-fast" checked class="w-5 h-5 accent-emerald-500 rounded">
+            </div>
+
+            <!-- LAUNCH BUTTON -->
+            <button onclick="launchPipeline()" id="btn-launch-pipeline" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-base shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 active:scale-95">
+              <i data-lucide="play" class="w-4 h-4 fill-black"></i>
+              <span>Launch Studio Pipeline</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: 10-STEP PROGRESS & VIDEO PREVIEW (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+          <!-- 10-STEP TIMELINE BOX -->
+          <div class="p-6 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-display font-semibold text-white">Autonomous Agent Pipeline</h3>
+                <p id="pipeline-status-text" class="text-xs text-zinc-400 mt-0.5">Ready to execute agents</p>
+              </div>
+              <div class="text-right">
+                <span id="pipeline-pct" class="text-2xl font-mono font-bold text-emerald-400">0%</span>
+              </div>
+            </div>
+
+            <!-- PROGRESS BAR -->
+            <div class="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
+              <div id="pipeline-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 w-0"></div>
+            </div>
+
+            <!-- 10 STEP LIST -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono" id="pipeline-steps-list">
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-1">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">1</span>
+                <span>1. Research & Trends</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-2">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">2</span>
+                <span>2. Technical Fact-Check</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-3">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">3</span>
+                <span>3. Explanation Engine</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-4">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">4</span>
+                <span>4. Visual Metaphor</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-5">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">5</span>
+                <span>5. Storyboard Assembly</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-6">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">6</span>
+                <span>6. Neural Voiceover</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-7">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">7</span>
+                <span>7. Procedural Soundtrack</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-8">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">8</span>
+                <span>8. Deterministic Render</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-9">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">9</span>
+                <span>9. Quality Control Audit</span>
+              </div>
+              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-10">
+                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">10</span>
+                <span>10. Final Reel Ready</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIDEO PREVIEW PLAYER (APPEARS WHEN READY) -->
+          <div id="video-preview-card" class="p-6 rounded-2xl bg-zinc-900/60 border border-white/10 hidden space-y-6">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-display font-semibold text-white">9:16 Reel Preview</h3>
+              <div class="flex items-center space-x-2">
+                <a id="btn-download-audio" href="#" download="master_audio.mp3" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 transition-colors flex items-center space-x-1.5 border border-white/10">
+                  <i data-lucide="music" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span>Voice & Audio</span>
+                </a>
+                <a id="btn-download-video" href="#" download="reel.mp4" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-emerald-500 text-black hover:bg-emerald-400 transition-colors flex items-center space-x-1.5">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  <span>Export MP4</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- PHONE CONTAINER -->
+            <div class="flex justify-center">
+              <div class="relative w-[300px] h-[533px] bg-black rounded-[36px] p-2 border-4 border-zinc-800 phone-shadow overflow-hidden flex items-center justify-center">
+                <video id="player-video" controls class="w-full h-full rounded-[28px] object-cover bg-zinc-950"></video>
+              </div>
+            </div>
+
+            <!-- AUDIO AUDITION PLAYER -->
+            <div class="p-4 rounded-xl bg-zinc-950/70 border border-white/10 space-y-2">
+              <div class="flex items-center justify-between text-xs text-zinc-400">
+                <span class="flex items-center gap-1.5 font-mono text-emerald-400"><i data-lucide="volume-2" class="w-4 h-4"></i> Voiceover & Master Audio Track</span>
+                <span id="audio-status" class="text-[11px] text-zinc-500">Studio Mix (Ducked BGM + Clean TTS)</span>
+              </div>
+              <audio id="player-audio" controls class="w-full h-9 rounded-lg"></audio>
+            </div>
+
+            <div class="flex items-center justify-center space-x-4">
+              <button onclick="navigate('storyboard')" class="px-4 py-2 text-xs font-medium rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all">
+                Inspect Storyboard Beats
+              </button>
+              <button onclick="launchPipeline()" class="px-4 py-2 text-xs font-medium rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all">
+                Render Again with New DNA
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 5: STORYBOARD ==================== -->
+    <div id="view-storyboard" class="hidden space-y-8">
+      <div class="border-b border-white/10 pb-6 flex items-center justify-between">
+        <div>
+          <h2 class="text-3xl font-display font-bold text-white tracking-tight">Storyboard & Beat Editor</h2>
+          <p class="text-sm text-zinc-400 mt-1">Timeline representation of the deterministic Motion Plan. Edit beats and regenerate individual scenes.</p>
+        </div>
+        <button onclick="navigate('create')" class="px-4 py-2 text-xs font-medium rounded-xl bg-emerald-500 text-black font-semibold hover:bg-emerald-400">
+          Render This Motion Plan
+        </button>
+      </div>
+
+      <!-- STORYBOARD TIMELINE LIST -->
+      <div id="storyboard-timeline" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 6: PROJECTS / HISTORY ==================== -->
+    <div id="view-projects" class="hidden space-y-8">
+      <div class="border-b border-white/10 pb-6">
+        <h2 class="text-3xl font-display font-bold text-white tracking-tight">Project History</h2>
+        <p class="text-sm text-zinc-400 mt-1">All generated technical reels, Creative DNA records, and verified source documents.</p>
+      </div>
+
+      <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- JAVASCRIPT APPLICATION CORE -->
+  <script>
+    // State
+    let currentView = 'home';
+    let activeReel = null;
+    let cachedTrends = null;
+    let cachedStyles = null;
+    let eventSource = null;
+
+    // Viral CS topics for "Surprise Me"
+    const SURPRISE_TOPICS = [
+      "Why CPU Branch Prediction Fails on Unsorted Data",
+      "How Recursion Works at the Assembly Stack Level",
+      "How Garbage Collection Detects Memory Leaks",
+      "Why Binary Search is O(log N) in Hardware",
+      "How Modern Async/Await and the Event Loop Work",
+      "Why B-Trees Power Almost Every Database",
+      "How Raft Consensus Prevents Split-Brain Disasters",
+      "How WebAssembly Runs Near Native Speed in the Browser"
+    ];
+
+    // Navigation Router
+    function navigate(viewName) {
+      currentView = viewName;
+      ['home', 'chat', 'trends', 'templates', 'create', 'storyboard', 'projects'].forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const nav = document.getElementById(`nav-${v}`);
+        if (el) el.classList.toggle('hidden', v !== viewName);
+        if (nav) {
+          if (v === viewName) {
+            nav.className = "px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-white bg-white/10";
+          } else {
+            nav.className = "px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5";
+          }
+        }
+      });
+      window.scrollTo(0, 0);
+      lucide.createIcons();
+
+      if (viewName === 'chat') initChat();
+      if (viewName === 'trends' && !cachedTrends) loadTrends();
+      if (viewName === 'templates' && !cachedStyles) loadStyles();
+      if (viewName === 'projects') loadProjects();
+    }
+
+    function surpriseMe() {
+      const topic = SURPRISE_TOPICS[Math.floor(Math.random() * SURPRISE_TOPICS.length)];
+      document.getElementById('hero-prompt').value = topic;
+    }
+
+    function startFromHome() {
+      const prompt = document.getElementById('hero-prompt').value.trim();
+      const topic = prompt || "How recursion works visually";
+      document.getElementById('create-topic').value = topic;
+      navigate('create');
+    }
+
+    function startMathReel(mathTopic) {
+      document.getElementById('create-topic').value = mathTopic;
+      document.getElementById('create-style').value = 'cinematic';
+      navigate('create');
+      launchPipeline();
+    }
+
+    function useTopic(topicText) {
+      document.getElementById('create-topic').value = topicText;
+      navigate('create');
+    }
+
+    // ==================== AI DIRECTOR CHAT CORE ====================
+    let chatHistory = [];
+    let chatInitialized = false;
+
+    const DEFAULT_PROMPT_PILLS = [
+      "📐 2D to 3D Math: Sinc Surface",
+      "🌀 Euler's 3D Complex Helix",
+      "⚡ Why CPU Branch Prediction Fails",
+      "💥 Recursion Call Stack Explosion",
+      "🔥 100x Database B-Tree vs Hash"
+    ];
+
+    function initChat() {
+      if (chatInitialized) return;
+      chatInitialized = true;
+
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = `
+        <div class="flex items-start space-x-3.5 max-w-2xl">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex-shrink-0 flex items-center justify-center text-black font-bold shadow-md shadow-emerald-500/20">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div class="space-y-3">
+            <div class="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 text-sm text-zinc-200 space-y-2.5">
+              <p class="font-medium text-white">Hey! I'm your AI Motion Graphics Director.</p>
+              <p class="text-zinc-300">Tell me what kind of video you want to make! I specialize in:</p>
+              <ul class="space-y-1.5 text-xs text-zinc-400 font-mono">
+                <li class="flex items-center space-x-2">
+                  <span class="text-emerald-400">✦</span>
+                  <span><strong>Insta Math Reels:</strong> 2D equation cross-sections that smoothly pitch into 3D isometric surface meshes.</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <span class="text-amber-400">✦</span>
+                  <span><strong>High-Retention Viral Hooks:</strong> Tailored opening hooks with extreme curiosity gaps.</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <span class="text-cyan-400">✦</span>
+                  <span><strong>1-Click Instant Render:</strong> Directly launch Remotion motion graphics from chat.</span>
+                </li>
+              </ul>
+              <p class="text-xs text-emerald-400 pt-1">Try saying: <em>"Make a crazy 2D to 3D math reel of Euler's formula"</em> or click one of the pills below!</p>
+            </div>
+          </div>
+        </div>
+      `;
+      renderChatSuggestions(DEFAULT_PROMPT_PILLS);
+      lucide.createIcons();
+    }
+
+    function renderChatSuggestions(pills) {
+      const el = document.getElementById('chat-suggestions');
+      if (!el) return;
+      el.innerHTML = pills.map(p => `
+        <button onclick="sendQuickPrompt('${p.replace(/'/g, "\\'")}')" class="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-zinc-300 hover:text-white transition-all flex items-center space-x-1">
+          <span>${p}</span>
+        </button>
+      `).join('');
+    }
+
+    function sendQuickPrompt(promptText) {
+      navigate('chat');
+      document.getElementById('chat-input').value = promptText;
+      sendChatMessage();
+    }
+
+    function clearChat() {
+      chatHistory = [];
+      chatInitialized = false;
+      initChat();
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      const container = document.getElementById('chat-messages');
+      const typing = document.getElementById('chat-typing');
+
+      // Append User message
+      container.innerHTML += `
+        <div class="flex items-start justify-end space-x-3 max-w-2xl ml-auto">
+          <div class="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-sm text-white font-sans max-w-xl">
+            ${escapeHtml(text)}
+          </div>
+          <div class="w-8 h-8 rounded-xl bg-zinc-800 flex-shrink-0 flex items-center justify-center text-zinc-400 text-xs font-mono border border-white/10">
+            YOU
+          </div>
+        </div>
+      `;
+      container.scrollTop = container.scrollHeight;
+
+      // Show typing indicator
+      typing.classList.remove('hidden');
+
+      try {
+        const resp = await fetch('/api/reels/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            history: chatHistory,
+            current_reel_id: activeReel ? activeReel.id : null
+          })
+        });
+
+        const data = await resp.json();
+        typing.classList.add('hidden');
+
+        if (data.status === 'success') {
+          chatHistory.push({ role: 'user', content: text });
+          chatHistory.push({ role: 'assistant', content: data.reply });
+
+          let cardHtml = '';
+          if (data.video_spec) {
+            const spec = data.video_spec;
+            const hookText = spec.viral_hook ? spec.viral_hook.headline : "CAN YOU SOLVE THIS?";
+            const hookSub = spec.viral_hook ? spec.viral_hook.subtext : "";
+            const mathEq = spec.math_spec ? spec.math_spec.equation_latex : (spec.is_math ? "$z = f(x, y)$" : null);
+
+            cardHtml = `
+              <div class="mt-4 p-5 rounded-2xl bg-zinc-950/80 border border-emerald-500/30 space-y-4 shadow-xl">
+                <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div class="flex items-center space-x-2">
+                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-mono font-bold">
+                      🎬 PROPOSED BLUEPRINT
+                    </span>
+                    ${spec.is_math ? `
+                      <span class="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[11px] font-mono">
+                        📐 2D ➔ 3D Math
+                      </span>
+                    ` : ''}
+                    <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[11px] font-mono uppercase">
+                      🎵 ${spec.bgm_style ? spec.bgm_style.replace(/_/g, ' ') : 'Dynamic BGM'}
+                    </span>
+                  </div>
+                  <span class="text-xs font-mono text-zinc-400 uppercase">${spec.style}</span>
+                </div>
+
+                <div class="space-y-2">
+                  <h4 class="text-base font-display font-bold text-white">${spec.topic}</h4>
+                  <div class="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <span class="text-[10px] font-mono uppercase text-amber-400">Viral Hook:</span>
+                    <p class="text-xs font-display font-bold text-zinc-100">"${hookText}"</p>
+                    ${hookSub ? `<p class="text-[11px] text-zinc-400">${hookSub}</p>` : ''}
+                  </div>
+
+                  ${mathEq ? `
+                    <div class="p-3 rounded-xl bg-cyan-950/20 border border-cyan-500/20 space-y-1">
+                      <span class="text-[10px] font-mono uppercase text-cyan-400">Formula & 3D Spatial Transition:</span>
+                      <p class="text-sm font-mono font-bold text-cyan-200">${mathEq}</p>
+                      <p class="text-[11px] text-zinc-400">Camera pitch 0° ➔ 55° into continuous isometric orbit.</p>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div class="pt-2 flex items-center space-x-2">
+                  <button onclick='createAndRenderFromChat(${JSON.stringify(spec).replace(/'/g, "&apos;")}, true)' class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-xs transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center space-x-1.5 active:scale-95">
+                    <i data-lucide="zap" class="w-4 h-4 fill-black"></i>
+                    <span>Launch & Render Crazy Video</span>
+                  </button>
+                  <button onclick='createAndRenderFromChat(${JSON.stringify(spec).replace(/'/g, "&apos;")}, false)' class="py-2.5 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-mono text-xs transition-all border border-white/10">
+                    Storyboard
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+
+          // Format AI text paragraphs
+          const formattedReply = data.reply
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
+            .replace(/\n\n/g, '</p><p class="mt-2 text-zinc-300">')
+            .replace(/\n- /g, '<br/>✦ ');
+
+          container.innerHTML += `
+            <div class="flex items-start space-x-3.5 max-w-2xl">
+              <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex-shrink-0 flex items-center justify-center text-black font-bold shadow-md shadow-emerald-500/20">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+              </div>
+              <div class="space-y-3 flex-1">
+                <div class="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 text-sm text-zinc-200 leading-relaxed font-sans">
+                  <p class="text-zinc-300">${formattedReply}</p>
+                  ${cardHtml}
+                </div>
+              </div>
+            </div>
+          `;
+
+          if (data.suggested_prompts && data.suggested_prompts.length > 0) {
+            renderChatSuggestions(data.suggested_prompts);
+          }
+        }
+      } catch (err) {
+        typing.classList.add('hidden');
+        container.innerHTML += `
+          <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300 font-mono">
+            Error contacting AI Director. Please try again.
+          </div>
+        `;
+      }
+
+      container.scrollTop = container.scrollHeight;
+      lucide.createIcons();
+    }
+
+    async function createAndRenderFromChat(spec, autoRender) {
+      try {
+        const resp = await fetch('/api/reels/create-from-spec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            video_spec: spec,
+            auto_render: autoRender
+          })
+        });
+
+        const data = await resp.json();
+        if (data.status === 'success') {
+          activeReel = data.reel;
+          const badge = document.getElementById('active-reel-badge');
+          const badgeId = document.getElementById('active-reel-id');
+          if (badge) badge.classList.remove('hidden');
+          if (badgeId) badgeId.innerText = activeReel.id;
+
+          document.getElementById('create-topic').value = activeReel.topic;
+          document.getElementById('create-style').value = activeReel.requested_style || 'cinematic';
+
+          if (autoRender) {
+            navigate('create');
+            // Listen to SSE progress
+            listenToReelEvents(activeReel.id);
+          } else {
+            navigate('storyboard');
+            loadStoryboard();
+          }
+        }
+      } catch (err) {
+        console.error("Create from chat error:", err);
+      }
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function useStyle(styleId) {
+      const select = document.getElementById('create-style');
+      if (select) select.value = styleId;
+      navigate('create');
+    }
+
+    function randomizeStyle() {
+      const select = document.getElementById('create-style');
+      const opts = select.options;
+      const idx = Math.floor(Math.random() * opts.length);
+      select.selectedIndex = idx;
+    }
+
+    // ── API: Load Trends ──
+    async function loadTrends() {
+      try {
+        const resp = await fetch('/api/trends');
+        const data = await resp.json();
+        cachedTrends = data;
+        renderHomeTrending(data.all_topics || []);
+        renderTrendsGrid(data.all_topics || []);
+      } catch (err) {
+        console.error("Trends fetch error:", err);
+      }
+    }
+
+    function renderHomeTrending(topics) {
+      const container = document.getElementById('home-trending-cards');
+      if (!container) return;
+      container.innerHTML = topics.slice(0, 8).map(t => `
+        <div class="p-5 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-white/15 transition-all flex flex-col justify-between group">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-zinc-500">${t.category}</span>
+              <span class="text-xs font-mono font-bold text-emerald-400">Score ${t.trend_score}</span>
+            </div>
+            <h4 class="text-base font-display font-semibold text-white group-hover:text-emerald-300 transition-colors">${t.topic}</h4>
+            <p class="text-xs text-zinc-400 line-clamp-2">${t.why}</p>
+          </div>
+          <div class="pt-4 mt-2 border-t border-white/5 flex items-center justify-between">
+            <span class="text-[11px] font-mono text-zinc-500">Visual ${t.visual_potential}%</span>
+            <button onclick="useTopic('${t.topic.replace(/'/g, "\\'")}')" class="text-xs font-medium text-emerald-400 hover:text-emerald-300 flex items-center space-x-1">
+              <span>Use Topic</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function renderTrendsGrid(topics) {
+      const container = document.getElementById('trends-grid');
+      if (!container) return;
+      container.innerHTML = topics.map(t => `
+        <div class="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 hover:border-emerald-500/30 transition-all flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 text-xs font-mono rounded-full bg-white/5 text-zinc-400 border border-white/5">${t.category}</span>
+              <div class="flex items-center space-x-1 text-emerald-400 font-mono text-xs font-bold">
+                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                <span>${t.trend_score}/100</span>
+              </div>
+            </div>
+            <h3 class="text-lg font-display font-bold text-white">${t.topic}</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">${t.why}</p>
+          </div>
+          <div class="space-y-4 pt-3 border-t border-white/5">
+            <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+              <div class="p-2 rounded-lg bg-zinc-950/80">
+                <div class="text-zinc-500 text-[10px]">VISUAL</div>
+                <div class="text-white font-bold">${t.visual_potential}%</div>
+              </div>
+              <div class="p-2 rounded-lg bg-zinc-950/80">
+                <div class="text-zinc-500 text-[10px]">CURIOSITY</div>
+                <div class="text-white font-bold">${t.curiosity_score}%</div>
+              </div>
+              <div class="p-2 rounded-lg bg-zinc-950/80">
+                <div class="text-zinc-500 text-[10px]">TECH VALUE</div>
+                <div class="text-white font-bold">${t.technical_value}%</div>
+              </div>
+            </div>
+            <button onclick="useTopic('${t.topic.replace(/'/g, "\\'")}')" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-black text-white text-xs font-display font-semibold transition-all flex items-center justify-center space-x-1.5">
+              <span>Use Topic in Studio</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function filterTrends(filter) {
+      document.querySelectorAll('.trend-tab').forEach(b => b.classList.remove('bg-white/10', 'text-white'));
+      event.target.classList.add('bg-white/10', 'text-white');
+      if (!cachedTrends) return;
+      let list = cachedTrends.all_topics;
+      if (filter === 'ai') list = cachedTrends.ai_topics;
+      renderTrendsGrid(list);
+    }
+
+    // ── API: Load Styles / Directives ──
+    async function loadStyles() {
+      try {
+        const resp = await fetch('/api/styles');
+        const data = await resp.json();
+        cachedStyles = data.styles;
+        renderStylesGrid(data.styles);
+      } catch (err) {
+        console.error("Styles fetch error:", err);
+      }
+    }
+
+    function renderStylesGrid(styles) {
+      const container = document.getElementById('templates-grid');
+      if (!container) return;
+      container.innerHTML = styles.map(s => `
+        <div class="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 hover:border-emerald-500/30 transition-all flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">${s.id}</span>
+              <span class="text-xs font-mono text-zinc-500">${s.camera || '2.5D dynamic'}</span>
+            </div>
+            <h3 class="text-xl font-display font-bold text-white">${s.name}</h3>
+            <p class="text-xs text-zinc-400 leading-relaxed">${s.description || 'Cinematic technical design directive'}</p>
+          </div>
+
+          <div class="space-y-2 pt-3 border-t border-white/5 text-xs font-mono">
+            <div class="flex justify-between text-zinc-400">
+              <span>Palette:</span>
+              <span class="text-zinc-200">${s.palette ? s.palette.join(' / ') : 'Dynamic'}</span>
+            </div>
+            <div class="flex justify-between text-zinc-400">
+              <span>Typography:</span>
+              <span class="text-zinc-200">${s.typography ? s.typography.join(' + ') : 'Modern'}</span>
+            </div>
+            <div class="flex justify-between text-zinc-400">
+              <span>Motion:</span>
+              <span class="text-zinc-200">${s.motion_language || 'Kinetic'}</span>
+            </div>
+          </div>
+
+          <button onclick="useStyle('${s.id}')" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-black text-white text-xs font-display font-semibold transition-all flex items-center justify-center space-x-1.5">
+            <span>Apply Aesthetic Directive</span>
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // ── API: Launch 10-Step Pipeline ──
+    async function launchPipeline() {
+      const topic = document.getElementById('create-topic').value.trim() || "Why CPU Branch Prediction Fails on Unsorted Data";
+      const style = document.getElementById('create-style').value;
+      const isFast = document.getElementById('create-fast').checked;
+      const bgmSelect = document.getElementById('create-bgm');
+      const bgmStyle = bgmSelect && bgmSelect.value !== 'auto' ? bgmSelect.value : undefined;
+
+      // Reset UI progress
+      document.getElementById('pipeline-pct').innerText = "0%";
+      document.getElementById('pipeline-bar').style.width = "0%";
+      document.getElementById('pipeline-status-text').innerText = "Initializing project draft...";
+      document.querySelectorAll('.step-item').forEach(el => {
+        el.className = "step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500";
+      });
+      document.getElementById('video-preview-card').classList.add('hidden');
+
+      try {
+        // Step A: Create Reel Draft
+        const createResp = await fetch('/api/reels', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic, style, duration: 50.0, bgm_style: bgmStyle })
+        });
+        const createData = await createResp.json();
+        activeReel = createData.reel;
+
+        document.getElementById('active-reel-badge').classList.remove('hidden');
+        document.getElementById('active-reel-id').innerText = activeReel.id;
+
+        // Step B: Connect SSE for live updates
+        listenToReelEvents(activeReel.id);
+
+        // Step C: Dispatch Render in background
+        await fetch(`/api/reels/${activeReel.id}/render`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fast: isFast })
+        });
+
+      } catch (err) {
+        console.error("Pipeline launch error:", err);
+        document.getElementById('pipeline-status-text').innerText = `Error: ${err.message}`;
+      }
+    }
+
+    function listenToReelEvents(reelId) {
+      if (eventSource) eventSource.close();
+      eventSource = new EventSource(`/api/reels/${reelId}/events`);
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const step = data.step;
+        const pct = data.progress_pct || 0;
+        const title = data.step_title || "";
+
+        document.getElementById('pipeline-pct').innerText = `${pct}%`;
+        document.getElementById('pipeline-bar').style.width = `${pct}%`;
+        document.getElementById('pipeline-status-text').innerText = title;
+
+        // Highlight active step
+        if (step >= 1 && step <= 10) {
+          for (let i = 1; i <= step; i++) {
+            const stepEl = document.getElementById(`step-${i}`);
+            if (stepEl) {
+              if (i === step && step < 10) {
+                stepEl.className = "step-item p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center space-x-2 text-emerald-400 font-bold";
+              } else {
+                stepEl.className = "step-item p-2 rounded-lg bg-zinc-950/90 border border-white/10 flex items-center space-x-2 text-zinc-300";
+              }
+            }
+          }
+        }
+
+        // On Final Complete
+        if (step === 10 || pct >= 100) {
+          eventSource.close();
+          showVideoPreview(reelId);
+          loadStoryboard(reelId);
+        }
+      };
+
+      eventSource.onerror = () => {
+        // Fallback polling if SSE closes
+        pollReelStatus(reelId);
+      };
+    }
+
+    async function pollReelStatus(reelId) {
+      const resp = await fetch(`/api/reels/${reelId}/status`);
+      const data = await resp.json();
+      if (data.status === 'completed' || data.progress_pct >= 100) {
+        showVideoPreview(reelId);
+        loadStoryboard(reelId);
+      } else {
+        setTimeout(() => pollReelStatus(reelId), 2000);
+      }
+    }
+
+    function showVideoPreview(reelId) {
+      const previewCard = document.getElementById('video-preview-card');
+      const videoEl = document.getElementById('player-video');
+      const downloadBtn = document.getElementById('btn-download-video');
+      const audioEl = document.getElementById('player-audio');
+      const downloadAudioBtn = document.getElementById('btn-download-audio');
+
+      const videoUrl = `/api/reels/${reelId}/video?t=${Date.now()}`;
+      videoEl.src = videoUrl;
+      downloadBtn.href = videoUrl;
+
+      const audioUrl = `/api/reels/${reelId}/audio?t=${Date.now()}`;
+      if (audioEl) {
+        audioEl.src = audioUrl;
+      }
+      if (downloadAudioBtn) {
+        downloadAudioBtn.href = audioUrl;
+      }
+
+      previewCard.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+      videoEl.play().catch(() => {});
+    }
+
+    // ── API: Storyboard & Scene Regeneration ──
+    async function loadStoryboard(reelId) {
+      try {
+        const resp = await fetch(`/api/reels/${reelId}`);
+        const data = await resp.json();
+        const reel = data.reel;
+        const motionPlan = reel.motion_plan;
+        if (!motionPlan) return;
+
+        const container = document.getElementById('storyboard-timeline');
+        container.innerHTML = motionPlan.scenes.map((sc, idx) => `
+          <div class="p-5 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  ${formatTime(sc.start)} ─── ${formatTime(sc.end)}
+                </span>
+                <span class="text-sm font-display font-bold text-white uppercase">${sc.id.replace(/_/g, ' ')}</span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-white/5 text-zinc-400">${sc.visual_type}</span>
+              </div>
+              <button onclick="regenerateScene(${idx})" class="text-xs text-emerald-400 hover:text-emerald-300 font-mono flex items-center space-x-1">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Regenerate Scene</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+              <div class="p-3 rounded-xl bg-zinc-950 border border-white/5">
+                <div class="text-zinc-500 text-[10px] mb-1 uppercase">Voiceover Narration</div>
+                <div class="text-zinc-300">${sc.narration}</div>
+              </div>
+              <div class="p-3 rounded-xl bg-zinc-950 border border-white/5">
+                <div class="text-zinc-500 text-[10px] mb-1 uppercase">Visual Cues</div>
+                <div class="text-emerald-400">${JSON.stringify(sc.elements || {})}</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Storyboard load error:", err);
+      }
+    }
+
+    async function regenerateScene(sceneIndex) {
+      if (!activeReel) return;
+      const newNarration = prompt("Enter updated narration text for this scene:", "");
+      if (!newNarration) return;
+
+      await fetch(`/api/reels/${activeReel.id}/regenerate-scene`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scene_index: sceneIndex, narration: newNarration })
+      });
+      loadStoryboard(activeReel.id);
+    }
+
+    function formatTime(sec) {
+      const s = Math.floor(sec);
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      return `${String(m).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
+    }
+
+    // ── API: Projects History ──
+    async function loadProjects() {
+      try {
+        const resp = await fetch('/api/reels');
+        const data = await resp.json();
+        const container = document.getElementById('projects-grid');
+        if (!container) return;
+
+        if (!data.reels || data.reels.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-3 text-center py-12 text-zinc-500">
+              No reels generated yet. Launch your first one!
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = data.reels.map(p => `
+          <div class="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 space-y-4 hover:border-emerald-500/30 transition-all flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono text-zinc-500">${p.id}</span>
+                <span class="px-2 py-0.5 text-[10px] font-mono rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${p.status}</span>
+              </div>
+              <h3 class="text-lg font-display font-bold text-white">${p.topic}</h3>
+              <div class="text-xs font-mono text-zinc-400 flex items-center space-x-2">
+                <span>Directive:</span>
+                <span class="text-emerald-400">${p.requested_style}</span>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-white/5 flex items-center justify-between">
+              <span class="text-xs text-zinc-500 font-mono">${new Date(p.created_at).toLocaleDateString()}</span>
+              ${p.has_video ? `
+                <a href="/api/reels/${p.id}/video" target="_blank" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-500 text-black hover:bg-emerald-400 transition-colors flex items-center space-x-1">
+                  <i data-lucide="play" class="w-3.5 h-3.5 fill-black"></i>
+                  <span>Watch Video</span>
+                </a>
+              ` : `
+                <span class="text-xs text-zinc-500">In Draft</span>
+              `}
+            </div>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Projects load error:", err);
+      }
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTrends();
+      lucide.createIcons();
+
+      // Check URL query parameters (e.g. ?topic=...&reel=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const qTopic = urlParams.get('topic');
+      const qReel = urlParams.get('reel');
+      if (qTopic) {
+        const topicInput = document.getElementById('create-topic');
+        if (topicInput) topicInput.value = qTopic;
+        if (qReel) {
+          activeReel = { id: qReel };
+          const badge = document.getElementById('active-reel-badge');
+          const badgeId = document.getElementById('active-reel-id');
+          if (badge) badge.classList.remove('hidden');
+          if (badgeId) badgeId.innerText = qReel;
+        }
+        navigate('create');
+      }
+    });
+  </script>
+
+  <!-- FLOATING AI DIRECTOR BUTTON -->
+  <button onclick="navigate('chat')" class="fixed bottom-6 right-6 z-40 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-display font-bold text-sm shadow-2xl shadow-emerald-500/40 hover:scale-105 active:scale-95 transition-all flex items-center space-x-2 border border-emerald-300/40 cursor-pointer">
+    <i data-lucide="bot" class="w-5 h-5"></i>
+    <span>Chat with AI Director</span>
+  </button>
+
+</body>
+</html>

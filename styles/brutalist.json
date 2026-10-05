@@ -1,0 +1,27 @@
+{
+  "id": "brutalist",
+  "name": "Neo-Brutalist",
+  "description": "Thick 4px stark black borders, high-contrast acid lime blocks, unapologetic raw graphic punch.",
+  "palette": [
+    "#FFFFFF",
+    "#000000",
+    "#CCFF00",
+    "#FF3366",
+    "#F0F0F0"
+  ],
+  "typography": [
+    "Archivo Black",
+    "IBM Plex Mono"
+  ],
+  "grid": "asymmetrical_blocks",
+  "spacing": "compact_dense",
+  "shapes": "hard_edged_slabs",
+  "shadows": "solid_black_drop_4px",
+  "lighting": "direct_flat_sun",
+  "texture": "concrete_speckle",
+  "transitions": "harsh_stencil_wipe",
+  "animation_vocabulary": "mechanical_slam_and_rebound",
+  "camera": "static_punch_ins",
+  "particle_behavior": "geometric_debris",
+  "sound_direction": "industrial_kick_impact"
+}

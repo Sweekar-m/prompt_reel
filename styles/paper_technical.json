@@ -1,0 +1,27 @@
+{
+  "id": "paper_technical",
+  "name": "Analog Paper & Technical Pen",
+  "description": "Parchment paper, crisp 0.2mm archival ink lines, mathematical schematic notation.",
+  "palette": [
+    "#F7F4EA",
+    "#1A1813",
+    "#C85A32",
+    "#8C8270",
+    "#ECE5D4"
+  ],
+  "typography": [
+    "DM Sans",
+    "IBM Plex Mono"
+  ],
+  "grid": "millimeter_cross_grid",
+  "spacing": "generous_drafting",
+  "shapes": "hand_drafted_bezier",
+  "shadows": "pencil_graphite_smudge",
+  "lighting": "natural_daylight_window",
+  "texture": "heavyweight_cotton_fiber",
+  "transitions": "page_turn_reveal",
+  "animation_vocabulary": "drafting_pen_stroke_draw",
+  "camera": "top_down_drafting_table",
+  "particle_behavior": "wood_pulp_specks",
+  "sound_direction": "fountain_pen_scratch_on_paper"
+}

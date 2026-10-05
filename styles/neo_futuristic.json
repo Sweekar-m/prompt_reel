@@ -1,0 +1,27 @@
+{
+  "id": "neo_futuristic",
+  "name": "Neo-Futuristic Deep Void",
+  "description": "Volumetric ambient lighting, refractive violet/cyan bloom, floating UI coordinates.",
+  "palette": [
+    "#070814",
+    "#00F0FF",
+    "#7928CA",
+    "#FFFFFF",
+    "#0E112A"
+  ],
+  "typography": [
+    "Space Grotesk",
+    "Inter"
+  ],
+  "grid": "hexagonal_sparse",
+  "spacing": "cinematic_wide",
+  "shapes": "chamfered_poly",
+  "shadows": "deep_space_ambient_occlusion",
+  "lighting": "raytraced_volumetric_bloom",
+  "texture": "subtle_sensor_noise",
+  "transitions": "warp_scale_zoom",
+  "animation_vocabulary": "fluid_orbital_float",
+  "camera": "smooth_continuous_orbit",
+  "particle_behavior": "starfield_velocity_vectors",
+  "sound_direction": "deep_celestial_pad"
+}

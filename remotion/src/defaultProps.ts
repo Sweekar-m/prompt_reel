@@ -1,0 +1,96 @@
+import { MotionPlanSchema } from "./types";
+
+export const defaultMotionPlan: MotionPlanSchema = {
+  version: "2.0",
+  topic: "How Recursion Works in Hardware",
+  duration: 15.0,
+  fps: 30,
+  total_frames: 450,
+  creative_direction: {
+    style_id: "cyberpunk",
+    palette: {
+      id: "electric_matrix",
+      name: "Electric Matrix",
+      background: [10, 14, 23],
+      primary: [0, 240, 255],
+      secondary: [255, 0, 128],
+      accent: [255, 230, 0],
+      surface: [18, 24, 38],
+      text: [240, 245, 255],
+      subtext: [140, 160, 190],
+    },
+    typography: {
+      id: "jetbrains_inter",
+      heading: "Inter, sans-serif",
+      body: "Inter, sans-serif",
+      mono: "JetBrains Mono, monospace",
+    },
+    hook: {
+      headline_template: "CAN YOUR CPU HANDLE RECURSION?",
+      subtext_template: "Every frame costs memory. Here is how stack frames live.",
+    },
+  },
+  scenes: [
+    {
+      id: "scene_1_hook",
+      beat_name: "HOOK",
+      start: 0.0,
+      end: 4.0,
+      duration: 4.0,
+      visual_type: "hook",
+      voice_text: "Wait. Can your CPU really handle unlimited recursion?",
+      elements: {
+        badge: "HARDWARE DEEP DIVE",
+        headline: "CAN YOUR CPU HANDLE RECURSION?",
+        subtext: "Every frame costs memory. Here is how stack frames live.",
+      },
+    },
+    {
+      id: "scene_2_metaphor",
+      beat_name: "MENTAL MODEL",
+      start: 4.0,
+      end: 8.0,
+      duration: 4.0,
+      visual_type: "metaphor",
+      voice_text: "Think of it physically: call frames pushing onto memory.",
+      elements: {
+        metaphor_id: "stack_recursion",
+        label: "CALL STACK SIMULATION",
+        description: "Contiguous stack memory allocated per invocation.",
+      },
+    },
+    {
+      id: "scene_3_code",
+      beat_name: "CODE EXECUTION",
+      start: 8.0,
+      end: 11.5,
+      duration: 3.5,
+      visual_type: "code",
+      voice_text: "Here is the exact assembly and memory boundary check.",
+      elements: {
+        filename: "recurse_stack.py",
+        lines: [
+          "def recurse(n):",
+          "    if n <= 1: return 1",
+          "    return n * recurse(n - 1)",
+        ],
+        highlight_line: 2,
+        annotation: "base case halts call frame allocation",
+      },
+    },
+    {
+      id: "scene_4_payoff",
+      beat_name: "PAYOFF",
+      start: 11.5,
+      end: 15.0,
+      duration: 3.5,
+      visual_type: "payoff",
+      voice_text: "That is bounded recursion. Deterministic memory safety.",
+      elements: {
+        title: "DETERMINISTIC MEMORY",
+        stat: "O(1) AUX",
+        subtitle: "Tail-call optimization transforms frames into loops.",
+      },
+    },
+  ],
+};

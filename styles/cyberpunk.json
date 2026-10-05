@@ -1,0 +1,27 @@
+{
+  "id": "cyberpunk",
+  "name": "Cyberpunk High-Tech",
+  "description": "High-contrast electric neon cyan, deep magenta, matrix scanlines and rapid digital distortion.",
+  "palette": [
+    "#050811",
+    "#00f3ff",
+    "#ff0055",
+    "#ffe600",
+    "#121829"
+  ],
+  "typography": [
+    "Space Grotesk",
+    "JetBrains Mono"
+  ],
+  "grid": "isometric_matrix",
+  "spacing": "tight",
+  "shapes": "angular_cut",
+  "shadows": "hard_neon_glow",
+  "lighting": "volumetric_rim_neon",
+  "texture": "digital_noise_scanlines",
+  "transitions": "glitch_displacement",
+  "animation_vocabulary": "rapid_snap_and_overshoot",
+  "camera": "dynamic_whip_pan_and_shake",
+  "particle_behavior": "binary_floating_dust",
+  "sound_direction": "cyberpunk_synthwave_aggressive"
+}

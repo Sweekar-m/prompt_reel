@@ -1,0 +1,27 @@
+{
+  "id": "terminal",
+  "name": "Retro Terminal Hacker",
+  "description": "Monochrome phosphor green or amber CRT glow, character cell blinking cursor.",
+  "palette": [
+    "#0A0E0A",
+    "#33FF33",
+    "#114411",
+    "#00AA00",
+    "#051505"
+  ],
+  "typography": [
+    "JetBrains Mono",
+    "IBM Plex Mono"
+  ],
+  "grid": "80x25_character_cells",
+  "spacing": "terminal_fixed",
+  "shapes": "block_glyphs",
+  "shadows": "crt_phosphor_halo",
+  "lighting": "cathode_ray_bloom",
+  "texture": "horizontal_raster_scanlines",
+  "transitions": "buffer_scroll_wipe",
+  "animation_vocabulary": "typewriter_character_stream",
+  "camera": "slight_barrel_distortion",
+  "particle_behavior": "phosphor_burn_trails",
+  "sound_direction": "relay_click_mechanical_keystroke"
+}
