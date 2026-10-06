@@ -78,23 +78,25 @@ with urllib.request.urlopen(req_list, timeout=3.0) as resp:
     assert data.get("status") == "success"
     reels = data.get("reels", [])
     print(f"✓ Retrieved {len(reels)} projects.")
-    has_target = any(r.get("id") == "82190f3d" for r in reels)
-    assert has_target, "Target recursion project 82190f3d not in project list"
+    completed_reels = [r for r in reels if r.get("has_video")]
+    target_reel = completed_reels[0] if completed_reels else reels[0]
+    target_id = target_reel.get("id")
+    print(f"✓ Target project selected for deep inspection: {target_id}")
 
-# 5. Test Single Project Details (GET /api/reels/82190f3d)
-print("\n[TEST 5] Inspecting project 82190f3d details...")
-req_proj = urllib.request.Request(f"{BASE_URL}/api/reels/82190f3d", headers={"User-Agent": "ReelTest"})
+# 5. Test Single Project Details (GET /api/reels/{target_id})
+print(f"\n[TEST 5] Inspecting project {target_id} details...")
+req_proj = urllib.request.Request(f"{BASE_URL}/api/reels/{target_id}", headers={"User-Agent": "ReelTest"})
 with urllib.request.urlopen(req_proj, timeout=3.0) as resp:
     assert resp.status == 200
     proj_data = json.loads(resp.read().decode("utf-8")).get("reel", {})
-    assert proj_data.get("id") == "82190f3d"
+    assert proj_data.get("id") == target_id
     assert proj_data.get("status") == "completed"
     assert proj_data.get("has_video") is True
 print(f"✓ Project details verified: Topic='{proj_data.get('topic')}', Status='{proj_data.get('status')}'.")
 
-# 6. Test Video Streaming (GET /api/reels/82190f3d/video)
-print("\n[TEST 6] Streaming Video via API...")
-req_video = urllib.request.Request(f"{BASE_URL}/api/reels/82190f3d/video", headers={"User-Agent": "ReelTest"})
+# 6. Test Video Streaming (GET /api/reels/{target_id}/video)
+print(f"\n[TEST 6] Streaming Video via API...")
+req_video = urllib.request.Request(f"{BASE_URL}/api/reels/{target_id}/video", headers={"User-Agent": "ReelTest"})
 with urllib.request.urlopen(req_video, timeout=5.0) as resp:
     assert resp.status == 200 or resp.status == 206
     c_type = resp.headers.get("Content-Type", "")

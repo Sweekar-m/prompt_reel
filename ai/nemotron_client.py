@@ -50,7 +50,7 @@ class NemotronClient:
         base_url: Optional[str] = None,
         model: Optional[str] = None
     ):
-        self.api_key = api_key or os.getenv("NVIDIA_NIM_API_KEY", "")
+        self.api_key = api_key if api_key is not None else os.getenv("NVIDIA_NIM_API_KEY", "")
         self.base_url = (base_url or os.getenv("NVIDIA_NIM_BASE_URL", DEFAULT_NIM_BASE_URL)).rstrip("/")
         self.model = model or os.getenv("NEMOTRON_MODEL", DEFAULT_NEMOTRON_MODEL)
         self.is_live = bool(self.api_key and not self.api_key.startswith("your_"))
@@ -524,6 +524,40 @@ class NemotronClient:
             }
 
     def _get_default_chat_director_reply(self, message: str) -> Dict[str, Any]:
+        msg_lower = message.lower()
+        if any(k in msg_lower for k in ["change the music", "change music", "different music", "different bgm", "new sound"]):
+            return {
+                "reply": "Switching Audio DNA! Regenerating procedural soundtrack with a contrasting musical genre, new BPM, distinct rhythm pattern, and refreshed chord progression while keeping your video visual cuts intact.",
+                "action": "regenerate_audio",
+                "suggested_prompts": [
+                    "🎵 Regenerate Soundtrack Now",
+                    "Change to Synthwave Groove",
+                    "Change to Minimal Atmospheric",
+                    "Keep video and change closer instead"
+                ]
+            }
+        if any(k in msg_lower for k in ["change the ending", "change ending", "different ending", "change the closer", "new closer"]):
+            return {
+                "reply": "Switching Closing Strategy! Swapping the payoff resolution architecture (selecting among Callback, Transformation, Compression, Kinetic Statement, Loop, or Minimal Truth) with a tailored visual layout.",
+                "action": "regenerate_closing",
+                "suggested_prompts": [
+                    "🎯 Regenerate Ending Now",
+                    "Make ending an Infinite Loop",
+                    "Make ending a High-Speed Kinetic Statement",
+                    "Make ending a Narrative Callback"
+                ]
+            }
+        if any(k in msg_lower for k in ["make it different", "change everything", "fresh take", "reroll"]):
+            return {
+                "reply": "Creative Divergence Mode engaged! Regenerating hook archetype, musical palette, motion grammar, and closing strategy with a fresh deterministic seed while preserving core technical invariants.",
+                "action": "regenerate_creative_plan",
+                "suggested_prompts": [
+                    "⚡ Regenerate Full Creative Plan",
+                    "Keep script but randomize visuals",
+                    "Switch to Neo-Futuristic Cyberpunk"
+                ]
+            }
+
         is_math = self._is_math_topic(message)
         cleaned_topic = re.sub(r'^(can you |please )?(create|make|generate|build)\s+(me\s+)?(a\s+)?(crazy\s+)?(video|reel|animation|short)\s+(on|about|for)\s+', '', message, flags=re.IGNORECASE).strip()
         cleaned_topic = re.sub(r'^(create|make|generate|build)\s+', '', cleaned_topic, flags=re.IGNORECASE).strip()
@@ -1057,6 +1091,8 @@ class NemotronClient:
 
         if "hook" in user_msg or "viral" in user_msg:
             return json.dumps(self._get_default_viral_hook(extracted_topic, "cinematic"))
+        elif "explain" in user_msg or "core_mechanism" in user_msg or "technical concept" in user_msg:
+            return json.dumps(self._get_default_technical_explanation(extracted_topic))
         elif "math" in user_msg or "equation" in user_msg or "3d" in user_msg:
             return json.dumps(self._get_default_math_concept(extracted_topic))
         elif "chat" in user_msg or "director" in user_msg or "crazy" in user_msg:
@@ -1072,12 +1108,10 @@ class NemotronClient:
             ])
         elif "metaphor" in user_msg:
             return json.dumps(self._get_default_metaphor_for_topic(extracted_topic))
-        elif "code" in user_msg:
+        elif "code" in user_msg or "snippet" in user_msg:
             return json.dumps(self._get_default_code_snippets(extracted_topic))
         elif "script" in user_msg:
             return json.dumps(self._get_default_script_for_topic(extracted_topic, [{} for _ in range(6)], self._get_default_technical_explanation(extracted_topic)))
-        elif "explain" in user_msg:
-            return json.dumps(self._get_default_technical_explanation(extracted_topic))
         else:
             return json.dumps({"status": "ok", "message": f"Deterministic intelligence for {extracted_topic}"})
 

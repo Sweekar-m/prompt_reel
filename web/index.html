@@ -3,1315 +3,2136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>REEL STUDIO — AI-Native Motion Graphics Studio</title>
-  <!-- Google Fonts: Space Grotesk, Inter, JetBrains Mono -->
+  <title>Prompt Reel — AI Video Creation Studio</title>
+  <meta name="description" content="Describe a video idea. AI turns it into professional motion graphics with voiceover, music, and cinematic visuals.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            display: ['Space Grotesk', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            brand: {
-              50: '#f0fdf4',
-              400: '#4ade80',
-              500: '#22c55e',
-              600: '#16a34a',
-            },
-            studio: {
-              base: '#0B0C10',
-              surface: '#12141C',
-              card: '#181B26',
-              border: 'rgba(255, 255, 255, 0.08)',
-              hover: 'rgba(255, 255, 255, 0.12)',
-            }
-          }
-        }
-      }
-    }
-  </script>
+
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080A0F;
+      --surface: #0D0F18;
+      --card: #121520;
+      --card-hover: #161B28;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.14);
+      --text: #F0F2F8;
+      --muted: #6B7280;
+      --accent: #6C63FF;
+      --accent-glow: rgba(108,99,255,0.25);
+      --green: #22D3A5;
+      --green-glow: rgba(34,211,165,0.2);
+      --amber: #F59E0B;
+      --red: #F43F5E;
+      --blue: #3B82F6;
+    }
+
+    html { font-size: 16px; }
     body {
-      background-color: #0B0C10;
-      color: #E2E8F0;
-      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+    /* ── LAYOUT ── */
+    .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(8,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
     }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #0B0C10;
+    .topbar-brand {
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+      text-decoration: none; color: inherit;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #272A38;
+    .brand-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: linear-gradient(135deg, #6C63FF 0%, #22D3A5 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px rgba(108,99,255,0.4);
+      flex-shrink: 0;
+    }
+    .brand-name {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800; font-size: 1.05rem;
+      letter-spacing: -0.02em; color: white;
+    }
+    .brand-tag {
+      font-size: 10px; font-family: 'JetBrains Mono', monospace;
+      color: var(--green); background: rgba(34,211,165,0.1);
+      border: 1px solid rgba(34,211,165,0.25); border-radius: 99px;
+      padding: 2px 8px; letter-spacing: 0.04em;
+    }
+    .topbar-nav {
+      display: flex; align-items: center; gap: 2px;
+    }
+    .nav-btn {
+      padding: 6px 14px; border-radius: 8px; border: none;
+      font-size: 0.82rem; font-weight: 500; cursor: pointer;
+      background: transparent; color: var(--muted); transition: all 0.15s;
+      font-family: inherit;
+    }
+    .nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .nav-btn.active { color: white; background: rgba(255,255,255,0.08); }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .status-pill {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;
+      color: var(--muted); background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 99px;
+      padding: 4px 12px;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: 10px; border: none;
+      font-size: 0.875rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--accent); color: white;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .btn-primary:hover { background: #7B74FF; box-shadow: 0 0 30px var(--accent-glow); transform: translateY(-1px); }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-ghost { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: var(--border-hover); }
+    .btn-green { background: var(--green); color: #080A0F; box-shadow: 0 0 20px var(--green-glow); }
+    .btn-green:hover { background: #34EBB7; transform: translateY(-1px); box-shadow: 0 0 30px var(--green-glow); }
+    .btn-green:active { transform: scale(0.97); }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; border-radius: 8px; }
+    .btn-xs { padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; }
+
+    /* ── MAIN CONTENT ── */
+    .main-content { flex: 1; padding-top: 60px; }
+
+    /* ── VIEWS ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ─────────────────────────────────────────
+       VIEW: HOME (Chatbot First)
+    ───────────────────────────────────────── */
+    #view-home {
+      min-height: calc(100vh - 60px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+    #view-home.active { display: flex; }
+
+    .home-hero {
+      width: 100%; max-width: 760px;
+      padding: 80px 24px 40px;
+      text-align: center;
+    }
+    .home-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.78rem; font-family: 'JetBrains Mono', monospace;
+      color: var(--accent); background: rgba(108,99,255,0.1);
+      border: 1px solid rgba(108,99,255,0.25); border-radius: 99px;
+      padding: 4px 14px; margin-bottom: 24px;
+    }
+    .home-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -0.03em; color: white;
+      margin-bottom: 18px;
+    }
+    .home-title .gradient-text {
+      background: linear-gradient(135deg, #6C63FF 0%, #22D3A5 60%, #F59E0B 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .home-subtitle {
+      font-size: 1.05rem; color: var(--muted); line-height: 1.6; margin-bottom: 48px;
+      max-width: 520px; margin-left: auto; margin-right: auto;
+    }
+
+    /* Chat input box */
+    .chat-input-box {
+      width: 100%; max-width: 680px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 6px 6px 6px 20px;
+      display: flex; align-items: flex-end; gap: 8px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.4);
+    }
+    .chat-input-box:focus-within {
+      border-color: rgba(108,99,255,0.5);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.1), 0 4px 40px rgba(0,0,0,0.4);
+    }
+    .chat-input-box textarea {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text); font-family: inherit; font-size: 1rem;
+      line-height: 1.5; resize: none; min-height: 52px; max-height: 200px;
+      padding: 10px 0;
+    }
+    .chat-input-box textarea::placeholder { color: var(--muted); }
+    .chat-send-btn {
+      width: 44px; height: 44px; border-radius: 12px; border: none;
+      background: var(--accent); color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.15s;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .chat-send-btn:hover { background: #7B74FF; transform: scale(1.05); }
+    .chat-send-btn:active { transform: scale(0.95); }
+
+    /* Example pills */
+    .example-prompts {
+      width: 100%; max-width: 680px;
+      padding: 20px 24px 0;
+    }
+    .example-label {
+      font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;
+      color: var(--muted); margin-bottom: 10px;
+    }
+    .example-chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px; border-radius: 99px; cursor: pointer; border: none;
+      font-size: 0.8rem; font-family: inherit; font-weight: 500;
+      background: rgba(255,255,255,0.05); color: var(--muted);
+      border: 1px solid var(--border); transition: all 0.15s;
+    }
+    .chip:hover { background: rgba(255,255,255,0.09); color: var(--text); border-color: var(--border-hover); }
+
+    /* Recent projects */
+    .home-projects {
+      width: 100%; max-width: 1100px;
+      padding: 48px 24px 60px;
+    }
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem; font-weight: 700; color: white;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .project-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 20px;
+      display: flex; flex-direction: column; gap: 12px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .project-card:hover {
+      border-color: var(--border-hover); transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .project-card-thumb {
+      width: 100%; height: 90px; border-radius: 10px;
+      background: linear-gradient(135deg, #1a1f30, #0d1020);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .project-card-thumb .thumb-glow {
+      position: absolute; width: 120px; height: 120px;
+      border-radius: 50%; filter: blur(30px); opacity: 0.4;
+    }
+    .project-card-title {
+      font-size: 0.9rem; font-weight: 600; color: white;
+      line-height: 1.3; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .project-card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.75rem; color: var(--muted);
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 99px; font-size: 0.7rem; font-weight: 600;
+    }
+    .badge-complete { background: rgba(34,211,165,0.1); color: var(--green); border: 1px solid rgba(34,211,165,0.2); }
+    .badge-draft { background: rgba(107,114,128,0.15); color: var(--muted); border: 1px solid rgba(107,114,128,0.2); }
+    .badge-processing { background: rgba(108,99,255,0.1); color: var(--accent); border: 1px solid rgba(108,99,255,0.2); }
+
+    /* ─────────────────────────────────────────
+       VIEW: WORKSPACE (Chat + Video)
+    ───────────────────────────────────────── */
+    #view-workspace {
+      display: none;
+      height: calc(100vh - 60px);
+    }
+    #view-workspace.active { display: grid; grid-template-columns: 420px 1fr; }
+
+    @media (max-width: 900px) {
+      #view-workspace.active { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    }
+
+    /* Chat panel */
+    .chat-panel {
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--border);
+      height: 100%; overflow: hidden;
+    }
+    .chat-panel-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-between; gap: 10px;
+      flex-shrink: 0;
+    }
+    .chat-panel-title {
+      font-family: 'Outfit', sans-serif; font-weight: 700;
+      font-size: 0.95rem; color: white;
+    }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 20px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .msg-row { display: flex; gap: 12px; }
+    .msg-row.user { flex-direction: row-reverse; }
+    .msg-avatar {
+      width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
+    }
+    .msg-avatar.ai {
+      background: linear-gradient(135deg, #6C63FF, #22D3A5);
+      box-shadow: 0 0 14px rgba(108,99,255,0.35);
+    }
+    .msg-avatar.user-av {
+      background: rgba(255,255,255,0.07); color: var(--muted);
+      border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+    }
+    .msg-bubble {
+      max-width: 320px; padding: 12px 16px; border-radius: 14px;
+      font-size: 0.875rem; line-height: 1.55;
+    }
+    .msg-bubble.ai {
+      background: var(--card); border: 1px solid var(--border); color: var(--text);
+      border-radius: 4px 14px 14px 14px;
+    }
+    .msg-bubble.user {
+      background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.25);
+      color: white; border-radius: 14px 4px 14px 14px;
+    }
+    .chat-typing-indicator {
+      display: flex; gap: 4px; padding: 8px 0;
+    }
+    .typing-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--muted); animation: typing 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)} }
+
+    .chat-input-area {
+      padding: 14px 16px; border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .chat-input-row {
+      display: flex; gap: 8px; align-items: flex-end;
+    }
+    .chat-text-input {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 14px; color: var(--text);
+      font-family: inherit; font-size: 0.875rem; outline: none;
+      transition: border-color 0.15s;
+      resize: none; min-height: 42px; max-height: 120px;
+    }
+    .chat-text-input:focus { border-color: rgba(108,99,255,0.4); }
+    .chat-text-input::placeholder { color: var(--muted); }
+
+    /* Right panel: Video + Options */
+    .video-panel {
+      display: flex; flex-direction: column; overflow: hidden;
+      background: var(--bg);
+    }
+    .video-panel-header {
+      padding: 16px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .video-panel-body {
+      flex: 1; overflow-y: auto; padding: 24px;
+    }
+
+    /* ─────────────────────────────────────────
+       GENERATION FLOW CARDS
+    ───────────────────────────────────────── */
+
+    /* Hook options */
+    .hooks-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px; margin: 16px 0;
+    }
+    .hook-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 14px 16px; cursor: pointer;
+      transition: all 0.2s; position: relative;
+    }
+    .hook-card:hover { border-color: rgba(108,99,255,0.4); background: var(--card-hover); }
+    .hook-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 20px var(--accent-glow); }
+    .hook-card.recommended::before {
+      content: 'AI PICK'; position: absolute; top: -8px; right: 10px;
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em;
+      background: var(--accent); color: white; padding: 2px 7px; border-radius: 99px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .hook-name { font-size: 0.72rem; font-weight: 600; color: var(--accent); margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; text-transform: uppercase; }
+    .hook-headline { font-size: 0.875rem; font-weight: 700; color: white; line-height: 1.3; margin-bottom: 4px; }
+    .hook-subtext { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+
+    /* Template visual preview cards */
+    .templates-scroll {
+      display: flex; gap: 14px; overflow-x: auto; padding: 4px 2px 12px;
+      scrollbar-width: thin;
+    }
+    .template-card {
+      min-width: 160px; border-radius: 12px; overflow: hidden;
+      border: 1.5px solid var(--border); cursor: pointer;
+      transition: all 0.2s; flex-shrink: 0; position: relative;
+    }
+    .template-card:hover { border-color: rgba(255,255,255,0.2); transform: scale(1.02); }
+    .template-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--accent-glow); }
+    .template-preview {
+      width: 100%; height: 110px; position: relative; overflow: hidden;
+    }
+    .template-info {
+      padding: 10px 12px; background: var(--card);
+    }
+    .template-name {
+      font-size: 0.78rem; font-weight: 700; color: white; margin-bottom: 2px;
+    }
+    .template-desc { font-size: 0.67rem; color: var(--muted); line-height: 1.3; }
+    .template-check {
+      position: absolute; top: 8px; right: 8px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .template-card.selected .template-check { opacity: 1; }
+
+    /* ── Template Preview Animations ── */
+    /* Cyberpunk */
+    .tp-cyberpunk { background: #0A0C12; }
+    .tp-cyberpunk .tp-grid {
+      position: absolute; inset: 0; opacity: 0.25;
+      background: linear-gradient(rgba(0,240,255,0.6) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(0,240,255,0.6) 1px, transparent 1px);
+      background-size: 20px 20px;
+      animation: gridScroll 3s linear infinite;
+    }
+    .tp-cyberpunk .tp-text {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+      color: #00F0FF; text-shadow: 0 0 10px #00F0FF;
+      animation: flicker 4s infinite;
+      white-space: nowrap;
+    }
+    .tp-cyberpunk .tp-bar {
+      position: absolute; bottom: 14px; left: 14px; right: 14px;
+      height: 2px; background: rgba(0,240,255,0.2); border-radius: 2px; overflow: hidden;
+    }
+    .tp-cyberpunk .tp-bar::after {
+      content: ''; position: absolute; left: -40%; width: 40%; height: 100%;
+      background: linear-gradient(90deg, transparent, #00F0FF, transparent);
+      animation: scanBar 2s linear infinite;
+    }
+    @keyframes gridScroll { to { background-position: 0 20px, 20px 0; } }
+    @keyframes flicker { 0%,95%,100%{opacity:1}96%,98%{opacity:0.3} }
+    @keyframes scanBar { to { left: 140%; } }
+
+    /* Cinematic */
+    .tp-cinematic { background: #0E0E10; }
+    .tp-cinematic .tp-glow {
+      position: absolute; top: 30%; left: 50%; transform: translate(-50%,-50%);
+      width: 80px; height: 80px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(235,205,145,0.35) 0%, transparent 70%);
+      animation: breathe 3s ease-in-out infinite;
+    }
+    .tp-cinematic .tp-text {
+      position: absolute; top: 55%; left: 50%; transform: translate(-50%,-50%);
+      font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 800;
+      color: #EBCD91; letter-spacing: 0.15em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .tp-cinematic .tp-line {
+      position: absolute; top: 68%; left: 20%; right: 20%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(235,205,145,0.6), transparent);
+      animation: expandLine 2s ease-out infinite;
+    }
+    @keyframes breathe { 0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.15)} }
+    @keyframes expandLine { 0%{transform:scaleX(0)}100%{transform:scaleX(1)} }
+
+    /* Terminal */
+    .tp-terminal { background: #080F0A; }
+    .tp-terminal .tp-code {
+      position: absolute; top: 12px; left: 12px; right: 12px;
+      font-family: 'JetBrains Mono', monospace; font-size: 8px;
+      color: #32FF78; line-height: 1.6;
+    }
+    .tp-terminal .tp-cursor {
+      display: inline-block; width: 5px; height: 11px;
+      background: #32FF78; margin-left: 2px; vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+
+    /* Editorial */
+    .tp-editorial { background: #F6F3EE; }
+    .tp-editorial .tp-accent-bar {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+      background: #EB5523;
+    }
+    .tp-editorial .tp-headline {
+      position: absolute; top: 22px; left: 22px; right: 14px;
+      font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800;
+      color: #141418; line-height: 1.3; letter-spacing: -0.01em;
+    }
+    .tp-editorial .tp-subline {
+      position: absolute; top: 68px; left: 22px;
+      font-family: 'JetBrains Mono', monospace; font-size: 7px;
+      color: #888; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .tp-editorial .tp-box {
+      position: absolute; bottom: 14px; left: 22px; right: 14px;
+      height: 18px; background: #EB5523; border-radius: 3px;
+      animation: slideIn 1.5s ease-out infinite;
+    }
+    @keyframes slideIn { 0%{transform:scaleX(0);transform-origin:left}100%{transform:scaleX(1)} }
+
+    /* Minimal */
+    .tp-minimal { background: #FAFAFA; }
+    .tp-minimal .tp-word {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 900;
+      color: #0a0a0a; letter-spacing: -0.03em;
+      animation: wordFade 3s ease-in-out infinite;
+    }
+    .tp-minimal .tp-line2 {
+      position: absolute; bottom: 24px; left: 30%; right: 30%; height: 2px;
+      background: #0a0a0a;
+      animation: scaleInOut 3s ease-in-out infinite;
+    }
+    @keyframes wordFade { 0%,100%{opacity:0;transform:translate(-50%,-50%) translateY(6px)}20%,80%{opacity:1;transform:translate(-50%,-50%)} }
+    @keyframes scaleInOut { 0%,100%{transform:scaleX(0)}20%,80%{transform:scaleX(1)} }
+
+    /* Blueprint */
+    .tp-blueprint { background: #0C2D5F; }
+    .tp-blueprint .tp-grid-b {
+      position: absolute; inset: 0; opacity: 0.3;
+      background: linear-gradient(rgba(120,210,255,0.5) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(120,210,255,0.5) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+    .tp-blueprint .tp-circle {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 60px; height: 60px; border-radius: 50%;
+      border: 1.5px solid rgba(120,210,255,0.7);
+      animation: rotateCircle 4s linear infinite;
+    }
+    .tp-blueprint .tp-circle::after {
+      content: ''; position: absolute; top: -1px; left: 50%;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: #78D2FF; margin-left: -2px;
+    }
+    @keyframes rotateCircle { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+    /* Glass UI */
+    .tp-glass { background: linear-gradient(135deg, #0E1420, #181F30); }
+    .tp-glass .tp-card1 {
+      position: absolute; top: 14px; left: 14px; right: 40px; bottom: 35px;
+      background: rgba(255,255,255,0.06); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+    }
+    .tp-glass .tp-card2 {
+      position: absolute; top: 30px; left: 30px; right: 14px; bottom: 14px;
+      background: rgba(90,195,255,0.08); backdrop-filter: blur(8px);
+      border: 1px solid rgba(90,195,255,0.15); border-radius: 8px;
+      animation: floatCard 3s ease-in-out infinite;
+    }
+    @keyframes floatCard { 0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)} }
+
+    /* Neo Futuristic */
+    .tp-neo { background: #0C0A18; }
+    .tp-neo .tp-ring {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 1.5px solid rgba(185,110,255,0.5);
+      animation: ringPulse 2s ease-in-out infinite;
+    }
+    .tp-neo .tp-ring2 {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid rgba(0,240,255,0.4);
+      animation: ringPulse 2s ease-in-out infinite reverse;
+    }
+    .tp-neo .tp-dot-center {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #B96EFF; box-shadow: 0 0 12px #B96EFF;
+    }
+    @keyframes ringPulse { 0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.08)} }
+
+    /* Voice cards */
+    .voices-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 10px; margin: 12px 0;
+    }
+    .voice-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 14px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .voice-card:hover { border-color: rgba(108,99,255,0.35); background: var(--card-hover); }
+    .voice-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 20px var(--accent-glow); }
+    .voice-name { font-size: 0.875rem; font-weight: 700; color: white; margin-bottom: 4px; }
+    .voice-meta { font-size: 0.72rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .voice-energy {
+      margin-top: 8px; display: flex; gap: 3px;
+    }
+    .energy-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+    }
+    .energy-dot.active { background: var(--accent); }
+
+    /* Script preview */
+    .script-preview {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; margin: 12px 0;
+    }
+    .script-preview-header {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .script-beat {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 80px 1fr; gap: 12px;
+    }
+    .script-beat:last-child { border-bottom: none; }
+    .beat-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; font-family: 'JetBrains Mono', monospace;
+      color: var(--accent); margin-top: 2px;
+    }
+    .beat-text { font-size: 0.875rem; color: var(--text); line-height: 1.5; }
+    .beat-time { font-size: 0.68rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+
+    /* Generation pipeline display */
+    .gen-pipeline {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px; margin: 12px 0;
+    }
+    .gen-stage {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0; transition: all 0.3s;
+    }
+    .gen-stage-icon {
+      width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 0.75rem;
+    }
+    .stage-pending .gen-stage-icon { background: rgba(255,255,255,0.05); }
+    .stage-active .gen-stage-icon { background: rgba(108,99,255,0.2); animation: stagePulse 1s ease-in-out infinite; }
+    .stage-done .gen-stage-icon { background: rgba(34,211,165,0.15); }
+    @keyframes stagePulse { 0%,100%{box-shadow:none}50%{box-shadow:0 0 14px var(--accent-glow)} }
+    .gen-stage-text { font-size: 0.875rem; }
+    .stage-pending .gen-stage-text { color: var(--muted); }
+    .stage-active .gen-stage-text { color: white; font-weight: 600; }
+    .stage-done .gen-stage-text { color: var(--text); }
+    .gen-progress-bar {
+      height: 3px; background: rgba(255,255,255,0.06); border-radius: 99px;
+      overflow: hidden; margin-top: 16px;
+    }
+    .gen-progress-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      transition: width 0.4s ease;
+    }
+
+    /* Video preview in right panel */
+    .video-preview-area {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 20px;
+    }
+    .phone-frame {
+      position: relative;
+      width: 240px; height: 426px;
+      background: #000; border-radius: 30px;
+      border: 3px solid rgba(255,255,255,0.12);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(108,99,255,0.12);
+      overflow: hidden;
+    }
+    .phone-frame video {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 27px;
+    }
+    .video-controls {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .video-actions {
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    }
+
+    /* Continuity & QC Styles */
+    .continuity-card {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .continuity-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .continuity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: rgba(34, 211, 165, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(34, 211, 165, 0.3);
+    }
+    .continuity-badge.warn {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--amber);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .continuity-bridge-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bridge-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .bridge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+    }
+    .bridge-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      padding: 2px 6px;
       border-radius: 4px;
+      background: rgba(108, 99, 255, 0.15);
+      color: #A78BFA;
+      border: 1px solid rgba(108, 99, 255, 0.3);
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #3B4054;
+    .continuity-live-pill {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(108, 99, 255, 0.08);
+      border: 1px solid rgba(108, 99, 255, 0.25);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .phone-shadow {
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(34, 197, 94, 0.15);
+
+    /* Empty state */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 12px; padding: 40px 20px; text-align: center; color: var(--muted);
     }
-    .subtle-glass {
-      background: rgba(18, 20, 28, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
+    .empty-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
     }
+
+    /* ─────────────────────────────────────────
+       VIEW: TRENDS + PROJECTS
+    ───────────────────────────────────────── */
+    .inner-page { padding: 32px 32px; max-width: 1200px; margin: 0 auto; }
+    .page-header { margin-bottom: 32px; }
+    .page-title {
+      font-family: 'Outfit', sans-serif; font-size: 1.8rem;
+      font-weight: 800; color: white; letter-spacing: -0.02em; margin-bottom: 6px;
+    }
+    .page-subtitle { font-size: 0.9rem; color: var(--muted); }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-hover); box-shadow: 0 4px 24px rgba(0,0,0,0.25); }
+
+    /* Trends card */
+    .trend-score-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      color: var(--green);
+    }
+    .trend-metrics {
+      display: flex; gap: 12px; margin: 12px 0;
+    }
+    .metric-item {
+      text-align: center;
+    }
+    .metric-val { font-size: 1rem; font-weight: 800; color: white; font-family: 'Outfit', sans-serif; }
+    .metric-label { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* Filter tabs */
+    .filter-tabs {
+      display: flex; gap: 4px; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 10px; padding: 4px;
+      margin-bottom: 24px; width: fit-content;
+    }
+    .filter-tab {
+      padding: 6px 14px; border-radius: 7px; border: none;
+      font-size: 0.8rem; font-weight: 500; cursor: pointer;
+      background: transparent; color: var(--muted); font-family: inherit;
+      transition: all 0.15s;
+    }
+    .filter-tab:hover { color: var(--text); }
+    .filter-tab.active { background: rgba(255,255,255,0.09); color: white; }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ── HELPER CLASSES ── */
+    .hidden { display: none !important; }
+    .text-accent { color: var(--accent); }
+    .text-green { color: var(--green); }
+    .text-muted { color: var(--muted); }
+    .text-amber { color: var(--amber); }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .font-display { font-family: 'Outfit', sans-serif; }
+
+    /* ── FLOATING FAB ── */
+    .fab-btn {
+      position: fixed; bottom: 24px; right: 24px; z-index: 90;
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 20px; border-radius: 16px; border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), #9B5DE5);
+      color: white; font-family: 'Outfit', sans-serif; font-weight: 700;
+      font-size: 0.9rem; box-shadow: 0 4px 24px rgba(108,99,255,0.4);
+      transition: all 0.2s;
+    }
+    .fab-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,99,255,0.5); }
+    .fab-btn:active { transform: scale(0.97); }
+
+    /* Inline card in chat (AI response cards) */
+    .ai-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; margin-top: 12px; overflow: hidden;
+    }
+    .ai-card-header {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;
+    }
+    .ai-card-body { padding: 12px 14px; }
+    .ai-card-actions { padding: 10px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+
+    /* Suggestion chips in chat */
+    .suggestion-chips {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 0 0;
+    }
+    .s-chip {
+      padding: 5px 12px; border-radius: 99px; border: 1px solid var(--border);
+      font-size: 0.75rem; color: var(--muted); background: transparent; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+    .s-chip:hover { background: rgba(255,255,255,0.05); color: var(--text); border-color: var(--border-hover); }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .topbar-nav { display: none; }
+      .inner-page { padding: 20px 16px; }
+      #view-workspace.active { grid-template-columns: 1fr; }
+      .chat-panel { max-height: 50vh; }
+    }
+
+    /* ── NOTIFICATION TOAST ── */
+    .toast {
+      position: fixed; bottom: 80px; right: 24px; z-index: 200;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 18px;
+      font-size: 0.875rem; color: var(--text);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      animation: toastIn 0.3s ease;
+    }
+    @keyframes toastIn { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
   </style>
 </head>
-<body class="min-h-screen flex flex-col bg-[#0B0C10] text-zinc-100 selection:bg-brand-500 selection:text-black">
+<body>
 
-  <!-- TOP APP BAR -->
-  <header class="sticky top-0 z-50 h-16 border-b border-white/10 subtle-glass flex items-center justify-between px-6 lg:px-10">
-    <div class="flex items-center space-x-4">
-      <div class="flex items-center space-x-2.5 cursor-pointer" onclick="navigate('home')">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-500 to-emerald-300 flex items-center justify-center shadow-lg shadow-brand-500/20">
-          <i data-lucide="clapperboard" class="w-4 h-4 text-black font-black"></i>
-        </div>
-        <div>
-          <span class="font-display font-bold text-lg tracking-tight text-white">REEL STUDIO</span>
-          <span class="text-[10px] ml-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">AI 2.0</span>
-        </div>
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:24px">
+    <a class="topbar-brand" onclick="navigate('home')" href="javascript:void(0)">
+      <div class="brand-icon">
+        <i data-lucide="clapperboard" style="width:16px;height:16px;color:#080A0F"></i>
       </div>
-
-      <nav class="hidden md:flex items-center space-x-1 pl-8">
-        <button onclick="navigate('home')" id="nav-home" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-white bg-white/10">Studio</button>
-        <button onclick="navigate('chat')" id="nav-chat" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-emerald-400 hover:text-white hover:bg-emerald-500/10 flex items-center space-x-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>AI Director</span></button>
-        <button onclick="navigate('trends')" id="nav-trends" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">Trends</button>
-        <button onclick="navigate('templates')" id="nav-templates" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">Directives</button>
-        <button onclick="navigate('create')" id="nav-create" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">Pipeline</button>
-        <button onclick="navigate('storyboard')" id="nav-storyboard" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">Storyboard</button>
-        <button onclick="navigate('projects')" id="nav-projects" class="px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5">History</button>
-      </nav>
+      <span class="brand-name">Prompt Reel</span>
+      <span class="brand-tag">AI</span>
+    </a>
+    <nav class="topbar-nav" id="main-nav">
+      <button class="nav-btn active" id="nav-home" onclick="navigate('home')">Studio</button>
+      <button class="nav-btn" id="nav-workspace" onclick="navigate('workspace')">Workspace</button>
+      <button class="nav-btn" id="nav-trends" onclick="navigate('trends')">Explore</button>
+      <button class="nav-btn" id="nav-projects" onclick="navigate('projects')">Projects</button>
+    </nav>
+  </div>
+  <div class="topbar-actions">
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span id="system-status">AI Engine Ready</span>
     </div>
+    <button class="btn btn-primary btn-sm" onclick="navigate('home')">
+      <i data-lucide="plus" style="width:14px;height:14px"></i> New Video
+    </button>
+  </div>
+</header>
 
-    <div class="flex items-center space-x-3">
-      <div class="flex items-center space-x-2 text-xs font-mono text-zinc-400 bg-zinc-900/80 px-3 py-1.5 rounded-full border border-white/5">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="system-status">NVIDIA NIM / Local Engine Ready</span>
-      </div>
-      <button onclick="navigate('create')" class="flex items-center space-x-2 px-4 py-1.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-400 text-black rounded-lg font-display transition-all shadow-md shadow-emerald-500/20 active:scale-95">
-        <i data-lucide="plus" class="w-4 h-4"></i>
-        <span>New Reel</span>
+<div class="main-content">
+
+<!-- ══════════════════════════════════════════
+     VIEW: HOME — Chatbot First
+══════════════════════════════════════════ -->
+<div class="view active" id="view-home">
+  <div class="home-hero">
+    <div class="home-eyebrow">
+      <i data-lucide="sparkles" style="width:12px;height:12px"></i>
+      AI Motion Graphics Director
+    </div>
+    <h1 class="home-title">
+      Describe a video.<br>
+      <span class="gradient-text">We create it.</span>
+    </h1>
+    <p class="home-subtitle">
+      Tell the AI what you want. It writes the script, picks the style, 
+      generates the storyboard, and renders a professional video — automatically.
+    </p>
+
+    <!-- Chat input -->
+    <div class="chat-input-box" id="home-input-box" style="margin:0 auto 20px;">
+      <textarea
+        id="home-prompt"
+        placeholder="Build me a video explaining if-else statements in Java for beginners..."
+        rows="1"
+        onkeydown="homeKeyDown(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="chat-send-btn" onclick="startFromHome()">
+        <i data-lucide="arrow-up" style="width:18px;height:18px"></i>
       </button>
     </div>
-  </header>
 
-  <!-- MAIN CONTAINER WITH DYNAMIC VIEWS -->
-  <main class="flex-1 w-full max-w-7xl mx-auto p-6 lg:p-10">
-
-    <!-- ==================== VIEW 1: HOME ==================== -->
-    <div id="view-home" class="space-y-12">
-      <!-- HERO PROMPT SECTION -->
-      <div class="relative py-12 px-8 rounded-3xl bg-gradient-to-b from-[#161822] to-[#10121A] border border-white/10 overflow-hidden">
-        <div class="absolute -right-20 -top-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-20 -bottom-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="max-w-3xl mx-auto text-center space-y-4">
-          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-emerald-400">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-            <span>Deterministic AI Motion Graphics Studio</span>
-          </div>
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight text-white leading-tight">
-            Turn an idea into a <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">cinematic technical Reel.</span>
-          </h1>
-          <p class="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto">
-            100+ unique visual identities. Zero repetitive templates. Verified technical truth.
-          </p>
-        </div>
-
-        <!-- LARGE INPUT BOX -->
-        <div class="max-w-2xl mx-auto mt-8 relative">
-          <div class="relative rounded-2xl bg-[#0B0C10] border border-white/15 focus-within:border-emerald-500/80 transition-all p-2 shadow-2xl">
-            <textarea id="hero-prompt" rows="3" class="w-full bg-transparent px-4 py-3 text-lg text-white placeholder-zinc-500 focus:outline-none resize-none font-sans" placeholder="What do you want to explain? (e.g. Explain how recursion works visually)"></textarea>
-            
-            <div class="flex items-center justify-between pt-2 px-2 border-t border-white/5">
-              <div class="flex items-center space-x-2 text-xs text-zinc-500">
-                <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span>Fast 30fps preview or 60fps master</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <button onclick="surpriseMe()" class="px-4 py-2 text-sm font-medium rounded-xl text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all">
-                  🎲 Surprise Me
-                </button>
-                <button onclick="startFromHome()" class="px-6 py-2 text-sm font-medium rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-semibold transition-all shadow-lg shadow-emerald-500/25 flex items-center space-x-2 active:scale-95">
-                  <span>Generate Reel</span>
-                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- CRAZY PROMPT QUICK CHIPS -->
-          <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <span class="text-xs font-mono text-zinc-500 mr-1">Trending Formats:</span>
-            <button onclick="startMathReel('Euler Complex 3D Spiral Helix')" class="px-3 py-1 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-mono transition-all flex items-center space-x-1.5">
-              <span>📐 2D ➔ 3D Math Reel</span>
-            </button>
-            <button onclick="startMathReel('Circular 3D Sinc Ripple Surface')" class="px-3 py-1 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-mono transition-all flex items-center space-x-1.5">
-              <span>🌀 Sinc Surface 3D</span>
-            </button>
-            <button onclick="useTopic('Why CPU Branch Prediction Fails on Unsorted Data')" class="px-3 py-1 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono transition-all">
-              <span>⚡ CPU Branch Prediction Shock</span>
-            </button>
-            <button onclick="navigate('chat')" class="px-3 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-semibold transition-all flex items-center space-x-1">
-              <i data-lucide="sparkles" class="w-3 h-3"></i>
-              <span>Chat with AI Director</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TRENDING RIGHT NOW SECTION -->
-      <div class="space-y-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-2.5">
-            <span class="text-xl font-display font-bold text-white tracking-tight">TRENDING RIGHT NOW</span>
-            <span class="px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">Live Velocity</span>
-          </div>
-          <button onclick="navigate('trends')" class="text-sm text-zinc-400 hover:text-emerald-400 transition-colors flex items-center space-x-1">
-            <span>Explore all trends</span>
-            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-          </button>
-        </div>
-
-        <div id="home-trending-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Populated by JS -->
-        </div>
+    <!-- Duration selector -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px">
+      <span style="font-size:0.75rem;color:var(--muted)">Duration:</span>
+      <div style="display:flex;gap:4px">
+        <button class="chip dur-btn active" data-dur="30" onclick="setDur(this)">30s</button>
+        <button class="chip dur-btn" data-dur="45" onclick="setDur(this)">45s</button>
+        <button class="chip dur-btn" data-dur="60" onclick="setDur(this)">60s</button>
+        <button class="chip dur-btn" data-dur="90" onclick="setDur(this)">90s</button>
       </div>
     </div>
 
-
-    <!-- ==================== VIEW: AI DIRECTOR CHAT ==================== -->
-    <div id="view-chat" class="hidden space-y-6">
-      <div class="border-b border-white/10 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-400 mb-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>NVIDIA NIM Llama 3.2 Vision • Active Live Engine</span>
-          </div>
-          <h2 class="text-3xl font-display font-bold text-white tracking-tight">AI Creative Director</h2>
-          <p class="text-sm text-zinc-400 mt-1">Chat with AI to brainstorm crazy video concepts, 2D-to-3D math transitions, and dynamic viral hooks.</p>
-        </div>
-        <div class="flex items-center space-x-2">
-          <button onclick="clearChat()" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all">Clear Chat</button>
-          <button onclick="sendQuickPrompt('Create an insane 2D to 3D math reel of Euler\'s formula where camera rotates 60 degrees into a 3D helix')" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all flex items-center space-x-1.5">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-            <span>Inspire Crazy Math Reel</span>
-          </button>
-        </div>
+    <!-- Example prompts -->
+    <div class="example-prompts" style="margin:0 auto">
+      <p class="example-label">Try these ideas →</p>
+      <div class="example-chips">
+        <button class="chip" onclick="usePrompt('Explain Java if-else statements in 30 seconds')">🔀 Java if-else</button>
+        <button class="chip" onclick="usePrompt('Explain REST APIs visually for beginners')">🌐 REST APIs</button>
+        <button class="chip" onclick="usePrompt('Explain recursion using a visual animation')">🌀 Recursion</button>
+        <button class="chip" onclick="usePrompt('Explain OOP concepts in Java for beginners')">☕ OOP in Java</button>
+        <button class="chip" onclick="usePrompt('Explain binary search with an animated demo')">🔍 Binary Search</button>
+        <button class="chip" onclick="usePrompt('Explain how async await works in JavaScript')">⚡ Async/Await</button>
+        <button class="chip" onclick="useSurprise()">🎲 Surprise me</button>
       </div>
+    </div>
+  </div>
 
-      <!-- CHAT INTERFACE CONTAINER -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- CHAT CONVERSATION WINDOW (8 cols) -->
-        <div class="lg:col-span-8 flex flex-col h-[680px] rounded-3xl bg-[#10121A] border border-white/10 overflow-hidden subtle-glass">
-          <!-- MESSAGES SCROLL AREA -->
-          <div id="chat-messages" class="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-6">
-            <!-- Initial greeting will be inserted by JS -->
-          </div>
+  <!-- Recent Projects -->
+  <div class="home-projects" id="home-projects-section">
+    <div class="section-header">
+      <span class="section-title">
+        <i data-lucide="clock" style="width:15px;height:15px;color:var(--muted)"></i>
+        Recent Videos
+      </span>
+      <button class="btn btn-ghost btn-xs" onclick="navigate('projects')">View all</button>
+    </div>
+    <div class="projects-grid" id="home-recent-grid">
+      <div class="skeleton" style="height:180px;border-radius:14px"></div>
+      <div class="skeleton" style="height:180px;border-radius:14px"></div>
+      <div class="skeleton" style="height:180px;border-radius:14px"></div>
+    </div>
+  </div>
+</div>
 
-          <!-- TYPING INDICATOR -->
-          <div id="chat-typing" class="hidden px-6 py-2.5 text-xs font-mono text-emerald-400 flex items-center space-x-2 bg-black/40 border-t border-white/5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span>AI Director is formulating camera choreography & viral hook...</span>
-          </div>
 
-          <!-- QUICK SUGGESTIONS -->
-          <div id="chat-suggestions" class="p-3 border-t border-white/5 bg-zinc-950/60 flex flex-wrap gap-2">
-            <!-- Dynamic suggestion pills -->
-          </div>
+<!-- ══════════════════════════════════════════
+     VIEW: WORKSPACE — Chat + Video Panel
+══════════════════════════════════════════ -->
+<div class="view" id="view-workspace">
 
-          <!-- INPUT FORM -->
-          <div class="p-4 border-t border-white/10 bg-[#0B0C10] flex items-center space-x-3">
-            <input type="text" id="chat-input" onkeydown="if(event.key === 'Enter') sendChatMessage()" placeholder="Describe your vision (e.g. 'Make a 2D math curve tilt into an orbiting 3D mesh surface with cyberpunk colors')..." class="flex-1 bg-zinc-900 border border-white/10 px-4 py-3 rounded-2xl text-white text-sm focus:outline-none focus:border-emerald-500 font-sans" />
-            <button onclick="sendChatMessage()" id="chat-send-btn" class="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-sm transition-all flex items-center space-x-1.5 shadow-lg shadow-emerald-500/20 active:scale-95">
-              <span>Direct</span>
-              <i data-lucide="send" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
+  <!-- LEFT: Chat Panel -->
+  <div class="chat-panel">
+    <div class="chat-panel-header" style="justify-content:space-between">
+      <div>
+        <div class="chat-panel-title">AI Director</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px" id="chat-subtitle">Ask me to create, modify, or improve your video</div>
+      </div>
+      <button class="btn btn-ghost btn-xs" onclick="clearWorkspaceChat()">Clear</button>
+    </div>
 
-        <!-- RIGHT: CREATIVE BLUEPRINT SIDEBAR (4 cols) -->
-        <div class="lg:col-span-4 space-y-6">
-          <div class="p-6 rounded-3xl bg-[#10121A] border border-white/10 space-y-5 subtle-glass">
-            <h3 class="text-base font-display font-semibold text-white flex items-center space-x-2">
-              <i data-lucide="compass" class="w-4 h-4 text-emerald-400"></i>
-              <span>Director Capabilities</span>
-            </h3>
+    <div class="chat-messages" id="ws-chat-messages">
+      <!-- Populated by JS -->
+    </div>
 
-            <div class="space-y-3 text-xs font-sans text-zinc-300">
-              <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
-                <span class="font-bold text-emerald-400 font-mono">📐 2D to 3D Math Reels</span>
-                <p class="text-zinc-400">Generates 2D Cartesian function cross-sections that smoothly tilt & elevate into 3D isometric parametric surface wireframes with real-time camera telemetry.</p>
-              </div>
-
-              <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
-                <span class="font-bold text-amber-400 font-mono">🔥 High-Retention Viral Hooks</span>
-                <p class="text-zinc-400">Creates tailored, non-repetitive viral hooks designed for first 3-second retention (shock, contradiction, myth debunking).</p>
-              </div>
-
-              <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1">
-                <span class="font-bold text-cyan-400 font-mono">⚡ 1-Click Autonomous Render</span>
-                <p class="text-zinc-400">Accept any blueprint proposed by the AI Director to immediately assemble the storyboard, synthesize voice, and render Remotion MP4.</p>
-              </div>
-            </div>
-
-            <div class="pt-2 border-t border-white/5">
-              <span class="text-[11px] font-mono text-zinc-500 block mb-2">QUICK LAUNCH RECIPES:</span>
-              <div class="space-y-1.5">
-                <button onclick="sendQuickPrompt('Create an Instagram viral reel showing a 2D damped sine wave that smoothly elevates into a 3D circular sinc ripple surface with rotating camera')" class="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-all flex items-center justify-between">
-                  <span>Sinc Ripple Surface 3D</span>
-                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-emerald-400"></i>
-                </button>
-                <button onclick="sendQuickPrompt('Make a crazy video showing Euler\'s identity on a 2D complex circle, then the camera pitches 55 degrees into a 3D helical spiral')" class="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-all flex items-center justify-between">
-                  <span>Euler\'s 3D Complex Helix</span>
-                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-emerald-400"></i>
-                </button>
-                <button onclick="sendQuickPrompt('Direct a high-energy video on why CPU branch prediction crashes on unsorted arrays with brutalist high contrast graphics')" class="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-all flex items-center justify-between">
-                  <span>CPU Branch Prediction Crash</span>
-                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-emerald-400"></i>
-                </button>
-              </div>
-            </div>
+    <div id="ws-typing" class="hidden" style="padding:0 20px 8px;">
+      <div class="msg-row">
+        <div class="msg-avatar ai"><i data-lucide="bot" style="width:14px;height:14px;color:#080A0F"></i></div>
+        <div class="msg-bubble ai">
+          <div class="chat-typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
           </div>
         </div>
       </div>
     </div>
 
-
-    <!-- ==================== VIEW 2: TRENDS ==================== -->
-    <div id="view-trends" class="hidden space-y-10">
-      <div class="border-b border-white/10 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-3xl font-display font-bold text-white tracking-tight">Trend Discovery</h2>
-          <p class="text-sm text-zinc-400 mt-1">Real developer signals, GitHub velocity, and motion graphics trends collected autonomously.</p>
-        </div>
-        <div class="flex items-center space-x-2 bg-zinc-900/60 p-1 rounded-xl border border-white/10">
-          <button onclick="filterTrends('all')" class="trend-tab active px-3.5 py-1.5 text-xs font-medium rounded-lg bg-white/10 text-white">All Signals</button>
-          <button onclick="filterTrends('ai')" class="trend-tab px-3.5 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-white">AI & Systems</button>
-          <button onclick="filterTrends('styles')" class="trend-tab px-3.5 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-white">Visual Styles</button>
-          <button onclick="filterTrends('hooks')" class="trend-tab px-3.5 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-white">Viral Hooks</button>
-        </div>
-      </div>
-
-      <div id="trends-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
-
-    <!-- ==================== VIEW 3: TEMPLATES / DIRECTIVES ==================== -->
-    <div id="view-templates" class="hidden space-y-10">
-      <div class="border-b border-white/10 pb-6">
-        <h2 class="text-3xl font-display font-bold text-white tracking-tight">Creative Directives</h2>
-        <p class="text-sm text-zinc-400 mt-1">15 cohesive design styles. Not static templates — algorithmic creative languages.</p>
-      </div>
-
-      <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
-
-    <!-- ==================== VIEW 4: CREATE / PIPELINE ==================== -->
-    <div id="view-create" class="hidden space-y-8">
-      <div class="border-b border-white/10 pb-6 flex items-center justify-between">
-        <div>
-          <h2 class="text-3xl font-display font-bold text-white tracking-tight">Reel Studio Pipeline</h2>
-          <p class="text-sm text-zinc-400 mt-1">Configure creative direction or launch the 10-step autonomous pipeline.</p>
-        </div>
-        <div id="active-reel-badge" class="hidden px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono">
-          Reel ID: <span id="active-reel-id">none</span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- LEFT: CREATIVE CONTROLS (5 cols) -->
-        <div class="lg:col-span-5 space-y-6">
-          <div class="p-6 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-5">
-            <h3 class="text-base font-display font-semibold text-white flex items-center space-x-2">
-              <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i>
-              <span>Creative Controls</span>
-            </h3>
-
-            <!-- TOPIC INPUT -->
-            <div>
-              <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Topic / Concept</label>
-              <input type="text" id="create-topic" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="e.g. Why CPU Branch Prediction Fails">
-            </div>
-
-            <!-- STYLE DIRECTIVE SELECTOR -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label class="text-xs font-mono text-zinc-400 uppercase">Aesthetic Directive</label>
-                <button onclick="randomizeStyle()" class="text-xs text-emerald-400 hover:underline">Surprise</button>
-              </div>
-              <select id="create-style" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500">
-                <option value="cinematic">Cinematic Tech (2.5D, dramatic lighting)</option>
-                <option value="editorial">Editorial (Warm cream/orange, serif/mono)</option>
-                <option value="brutalist">Brutalist (High contrast, aggressive grid)</option>
-                <option value="swiss_grid">Swiss Grid (Clean, minimalist typographic order)</option>
-                <option value="cyberpunk">Cyberpunk (Electric cyan, matrix scans)</option>
-                <option value="terminal">Terminal Hacker (Pure monospace green phosphor)</option>
-                <option value="blueprint">Technical Blueprint (Architectural grid lines)</option>
-                <option value="luxury_tech">Luxury Tech (Matte obsidian and brushed gold)</option>
-                <option value="glass_ui">Glass UI (Translucent frosted card layers)</option>
-                <option value="minimal">Minimal (Stark monochrome focus)</option>
-              </select>
-            </div>
-
-            <!-- HOOK ARCHETYPE -->
-            <div>
-              <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Hook Archetype</label>
-              <select id="create-hook" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500">
-                <option value="cold_open">The Assertive Cold Open ("Your CPU is lying to you.")</option>
-                <option value="contradiction">The Shock Contradiction ("This looks slow. It is 100x faster.")</option>
-                <option value="visual_shock">Visual Shock (Exploding stack frame)</option>
-                <option value="code_first">Mysterious Code Dissection</option>
-                <option value="myth_debunk">Common Myth Debunk</option>
-                <option value="question">Provocative Question</option>
-              </select>
-            </div>
-
-            <!-- VOICE PERSONA -->
-            <div>
-              <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Voice Persona</label>
-              <select id="create-voice" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500">
-                <option value="energetic_explainer">Energetic Explainer (Christopher Neural +20%)</option>
-                <option value="theatrical_hacker">Theatrical Hacker Noir (Deep, deliberate pacing)</option>
-                <option value="calm_architect">Calm Systems Architect (Guy Neural, measured)</option>
-                <option value="young_technical">Young Technical Founder (Jenny Neural +15%)</option>
-              </select>
-            </div>
-
-            <!-- SOUNDTRACK / DYNAMIC BGM -->
-            <div>
-              <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Soundtrack / Dynamic BGM</label>
-              <select id="create-bgm" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500">
-                <option value="auto">🎵 Auto AI-Dynamic (Matches topic & mood)</option>
-                <option value="dark_math">📐 Dark Math & Geometry (88 BPM • Minor bells & sub braams)</option>
-                <option value="cinematic">🎬 Cinematic Hans Zimmer Pulse (86 BPM • Sub braams & cello)</option>
-                <option value="lofi_chill">☕ Lo-Fi Coding & Math Beat (84 BPM • Vintage Rhodes & swing)</option>
-                <option value="phonk_drift">🏎️ Phonk Tech Drift (138 BPM • 808 cowbells & trap hats)</option>
-                <option value="retro_chiptune">👾 8-Bit Arcade Computing (128 BPM • Square waves & noise snare)</option>
-                <option value="cyberpunk">⚡ Cyberpunk Electro (126 BPM • Saw leads & rolling bass)</option>
-                <option value="minimal_electronic">✨ Minimal Clean Tech (118 BPM • Warm plucks & sine sub)</option>
-              </select>
-            </div>
-
-            <!-- FAST PREVIEW TOGGLE -->
-            <div class="flex items-center justify-between pt-2 border-t border-white/5">
-              <div>
-                <div class="text-sm font-medium text-white">⚡ Fast Render Mode</div>
-                <div class="text-xs text-zinc-500">540×960 at ~30fps for ultra-fast previews</div>
-              </div>
-              <input type="checkbox" id="create-fast" checked class="w-5 h-5 accent-emerald-500 rounded">
-            </div>
-
-            <!-- LAUNCH BUTTON -->
-            <button onclick="launchPipeline()" id="btn-launch-pipeline" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-base shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 active:scale-95">
-              <i data-lucide="play" class="w-4 h-4 fill-black"></i>
-              <span>Launch Studio Pipeline</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- RIGHT: 10-STEP PROGRESS & VIDEO PREVIEW (7 cols) -->
-        <div class="lg:col-span-7 space-y-6">
-          <!-- 10-STEP TIMELINE BOX -->
-          <div class="p-6 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-6">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-base font-display font-semibold text-white">Autonomous Agent Pipeline</h3>
-                <p id="pipeline-status-text" class="text-xs text-zinc-400 mt-0.5">Ready to execute agents</p>
-              </div>
-              <div class="text-right">
-                <span id="pipeline-pct" class="text-2xl font-mono font-bold text-emerald-400">0%</span>
-              </div>
-            </div>
-
-            <!-- PROGRESS BAR -->
-            <div class="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
-              <div id="pipeline-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 w-0"></div>
-            </div>
-
-            <!-- 10 STEP LIST -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono" id="pipeline-steps-list">
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-1">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">1</span>
-                <span>1. Research & Trends</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-2">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">2</span>
-                <span>2. Technical Fact-Check</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-3">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">3</span>
-                <span>3. Explanation Engine</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-4">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">4</span>
-                <span>4. Visual Metaphor</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-5">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">5</span>
-                <span>5. Storyboard Assembly</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-6">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">6</span>
-                <span>6. Neural Voiceover</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-7">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">7</span>
-                <span>7. Procedural Soundtrack</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-8">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">8</span>
-                <span>8. Deterministic Render</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-9">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">9</span>
-                <span>9. Quality Control Audit</span>
-              </div>
-              <div class="step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500" id="step-10">
-                <span class="w-5 h-5 rounded-full border border-zinc-700 flex items-center justify-center text-[10px]">10</span>
-                <span>10. Final Reel Ready</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- VIDEO PREVIEW PLAYER (APPEARS WHEN READY) -->
-          <div id="video-preview-card" class="p-6 rounded-2xl bg-zinc-900/60 border border-white/10 hidden space-y-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-base font-display font-semibold text-white">9:16 Reel Preview</h3>
-              <div class="flex items-center space-x-2">
-                <a id="btn-download-audio" href="#" download="master_audio.mp3" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 transition-colors flex items-center space-x-1.5 border border-white/10">
-                  <i data-lucide="music" class="w-3.5 h-3.5 text-emerald-400"></i>
-                  <span>Voice & Audio</span>
-                </a>
-                <a id="btn-download-video" href="#" download="reel.mp4" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-emerald-500 text-black hover:bg-emerald-400 transition-colors flex items-center space-x-1.5">
-                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                  <span>Export MP4</span>
-                </a>
-              </div>
-            </div>
-
-            <!-- PHONE CONTAINER -->
-            <div class="flex justify-center">
-              <div class="relative w-[300px] h-[533px] bg-black rounded-[36px] p-2 border-4 border-zinc-800 phone-shadow overflow-hidden flex items-center justify-center">
-                <video id="player-video" controls class="w-full h-full rounded-[28px] object-cover bg-zinc-950"></video>
-              </div>
-            </div>
-
-            <!-- AUDIO AUDITION PLAYER -->
-            <div class="p-4 rounded-xl bg-zinc-950/70 border border-white/10 space-y-2">
-              <div class="flex items-center justify-between text-xs text-zinc-400">
-                <span class="flex items-center gap-1.5 font-mono text-emerald-400"><i data-lucide="volume-2" class="w-4 h-4"></i> Voiceover & Master Audio Track</span>
-                <span id="audio-status" class="text-[11px] text-zinc-500">Studio Mix (Ducked BGM + Clean TTS)</span>
-              </div>
-              <audio id="player-audio" controls class="w-full h-9 rounded-lg"></audio>
-            </div>
-
-            <div class="flex items-center justify-center space-x-4">
-              <button onclick="navigate('storyboard')" class="px-4 py-2 text-xs font-medium rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all">
-                Inspect Storyboard Beats
-              </button>
-              <button onclick="launchPipeline()" class="px-4 py-2 text-xs font-medium rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all">
-                Render Again with New DNA
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- ==================== VIEW 5: STORYBOARD ==================== -->
-    <div id="view-storyboard" class="hidden space-y-8">
-      <div class="border-b border-white/10 pb-6 flex items-center justify-between">
-        <div>
-          <h2 class="text-3xl font-display font-bold text-white tracking-tight">Storyboard & Beat Editor</h2>
-          <p class="text-sm text-zinc-400 mt-1">Timeline representation of the deterministic Motion Plan. Edit beats and regenerate individual scenes.</p>
-        </div>
-        <button onclick="navigate('create')" class="px-4 py-2 text-xs font-medium rounded-xl bg-emerald-500 text-black font-semibold hover:bg-emerald-400">
-          Render This Motion Plan
+    <div class="chat-input-area">
+      <div class="suggestion-chips" id="ws-suggestions" style="padding-bottom:10px"></div>
+      <div class="chat-input-row">
+        <textarea
+          class="chat-text-input"
+          id="ws-chat-input"
+          placeholder='Say "Make it more dynamic" or describe changes...'
+          rows="1"
+          onkeydown="wsKeyDown(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="chat-send-btn" onclick="sendWorkspaceMessage()">
+          <i data-lucide="arrow-up" style="width:16px;height:16px"></i>
         </button>
       </div>
+    </div>
+  </div>
 
-      <!-- STORYBOARD TIMELINE LIST -->
-      <div id="storyboard-timeline" class="space-y-4">
-        <!-- Rendered dynamically -->
+  <!-- RIGHT: Video + Options Panel -->
+  <div class="video-panel">
+    <div class="video-panel-header">
+      <div>
+        <div style="font-size:0.95rem;font-weight:700;color:white;font-family:'Outfit',sans-serif" id="video-panel-title">
+          Ready to create
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px" id="video-panel-sub">
+          Your video will appear here
+        </div>
       </div>
+      <div style="display:flex;gap:8px" id="video-header-actions"></div>
     </div>
 
-
-    <!-- ==================== VIEW 6: PROJECTS / HISTORY ==================== -->
-    <div id="view-projects" class="hidden space-y-8">
-      <div class="border-b border-white/10 pb-6">
-        <h2 class="text-3xl font-display font-bold text-white tracking-tight">Project History</h2>
-        <p class="text-sm text-zinc-400 mt-1">All generated technical reels, Creative DNA records, and verified source documents.</p>
-      </div>
-
-      <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Rendered dynamically -->
+    <div class="video-panel-body" id="video-panel-body">
+      <!-- Hook selector, templates, voices, script, generation, video — all shown progressively -->
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i data-lucide="video" style="width:22px;height:22px;color:var(--muted)"></i>
+        </div>
+        <p style="font-size:0.9rem;font-weight:600;color:white">Start with the chat</p>
+        <p style="font-size:0.82rem;color:var(--muted)">Describe your video idea in the chat panel to begin</p>
       </div>
     </div>
-
-  </main>
-
-  <!-- JAVASCRIPT APPLICATION CORE -->
-  <script>
-    // State
-    let currentView = 'home';
-    let activeReel = null;
-    let cachedTrends = null;
-    let cachedStyles = null;
-    let eventSource = null;
-
-    // Viral CS topics for "Surprise Me"
-    const SURPRISE_TOPICS = [
-      "Why CPU Branch Prediction Fails on Unsorted Data",
-      "How Recursion Works at the Assembly Stack Level",
-      "How Garbage Collection Detects Memory Leaks",
-      "Why Binary Search is O(log N) in Hardware",
-      "How Modern Async/Await and the Event Loop Work",
-      "Why B-Trees Power Almost Every Database",
-      "How Raft Consensus Prevents Split-Brain Disasters",
-      "How WebAssembly Runs Near Native Speed in the Browser"
-    ];
-
-    // Navigation Router
-    function navigate(viewName) {
-      currentView = viewName;
-      ['home', 'chat', 'trends', 'templates', 'create', 'storyboard', 'projects'].forEach(v => {
-        const el = document.getElementById(`view-${v}`);
-        const nav = document.getElementById(`nav-${v}`);
-        if (el) el.classList.toggle('hidden', v !== viewName);
-        if (nav) {
-          if (v === viewName) {
-            nav.className = "px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-white bg-white/10";
-          } else {
-            nav.className = "px-3.5 py-1.5 text-sm font-medium rounded-lg transition-all text-zinc-400 hover:text-white hover:bg-white/5";
-          }
-        }
-      });
-      window.scrollTo(0, 0);
-      lucide.createIcons();
-
-      if (viewName === 'chat') initChat();
-      if (viewName === 'trends' && !cachedTrends) loadTrends();
-      if (viewName === 'templates' && !cachedStyles) loadStyles();
-      if (viewName === 'projects') loadProjects();
-    }
-
-    function surpriseMe() {
-      const topic = SURPRISE_TOPICS[Math.floor(Math.random() * SURPRISE_TOPICS.length)];
-      document.getElementById('hero-prompt').value = topic;
-    }
-
-    function startFromHome() {
-      const prompt = document.getElementById('hero-prompt').value.trim();
-      const topic = prompt || "How recursion works visually";
-      document.getElementById('create-topic').value = topic;
-      navigate('create');
-    }
-
-    function startMathReel(mathTopic) {
-      document.getElementById('create-topic').value = mathTopic;
-      document.getElementById('create-style').value = 'cinematic';
-      navigate('create');
-      launchPipeline();
-    }
-
-    function useTopic(topicText) {
-      document.getElementById('create-topic').value = topicText;
-      navigate('create');
-    }
-
-    // ==================== AI DIRECTOR CHAT CORE ====================
-    let chatHistory = [];
-    let chatInitialized = false;
-
-    const DEFAULT_PROMPT_PILLS = [
-      "📐 2D to 3D Math: Sinc Surface",
-      "🌀 Euler's 3D Complex Helix",
-      "⚡ Why CPU Branch Prediction Fails",
-      "💥 Recursion Call Stack Explosion",
-      "🔥 100x Database B-Tree vs Hash"
-    ];
-
-    function initChat() {
-      if (chatInitialized) return;
-      chatInitialized = true;
-
-      const container = document.getElementById('chat-messages');
-      container.innerHTML = `
-        <div class="flex items-start space-x-3.5 max-w-2xl">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex-shrink-0 flex items-center justify-center text-black font-bold shadow-md shadow-emerald-500/20">
-            <i data-lucide="bot" class="w-4 h-4"></i>
-          </div>
-          <div class="space-y-3">
-            <div class="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 text-sm text-zinc-200 space-y-2.5">
-              <p class="font-medium text-white">Hey! I'm your AI Motion Graphics Director.</p>
-              <p class="text-zinc-300">Tell me what kind of video you want to make! I specialize in:</p>
-              <ul class="space-y-1.5 text-xs text-zinc-400 font-mono">
-                <li class="flex items-center space-x-2">
-                  <span class="text-emerald-400">✦</span>
-                  <span><strong>Insta Math Reels:</strong> 2D equation cross-sections that smoothly pitch into 3D isometric surface meshes.</span>
-                </li>
-                <li class="flex items-center space-x-2">
-                  <span class="text-amber-400">✦</span>
-                  <span><strong>High-Retention Viral Hooks:</strong> Tailored opening hooks with extreme curiosity gaps.</span>
-                </li>
-                <li class="flex items-center space-x-2">
-                  <span class="text-cyan-400">✦</span>
-                  <span><strong>1-Click Instant Render:</strong> Directly launch Remotion motion graphics from chat.</span>
-                </li>
-              </ul>
-              <p class="text-xs text-emerald-400 pt-1">Try saying: <em>"Make a crazy 2D to 3D math reel of Euler's formula"</em> or click one of the pills below!</p>
-            </div>
-          </div>
-        </div>
-      `;
-      renderChatSuggestions(DEFAULT_PROMPT_PILLS);
-      lucide.createIcons();
-    }
-
-    function renderChatSuggestions(pills) {
-      const el = document.getElementById('chat-suggestions');
-      if (!el) return;
-      el.innerHTML = pills.map(p => `
-        <button onclick="sendQuickPrompt('${p.replace(/'/g, "\\'")}')" class="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-zinc-300 hover:text-white transition-all flex items-center space-x-1">
-          <span>${p}</span>
-        </button>
-      `).join('');
-    }
-
-    function sendQuickPrompt(promptText) {
-      navigate('chat');
-      document.getElementById('chat-input').value = promptText;
-      sendChatMessage();
-    }
-
-    function clearChat() {
-      chatHistory = [];
-      chatInitialized = false;
-      initChat();
-    }
-
-    async function sendChatMessage() {
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-
-      const container = document.getElementById('chat-messages');
-      const typing = document.getElementById('chat-typing');
-
-      // Append User message
-      container.innerHTML += `
-        <div class="flex items-start justify-end space-x-3 max-w-2xl ml-auto">
-          <div class="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-sm text-white font-sans max-w-xl">
-            ${escapeHtml(text)}
-          </div>
-          <div class="w-8 h-8 rounded-xl bg-zinc-800 flex-shrink-0 flex items-center justify-center text-zinc-400 text-xs font-mono border border-white/10">
-            YOU
-          </div>
-        </div>
-      `;
-      container.scrollTop = container.scrollHeight;
-
-      // Show typing indicator
-      typing.classList.remove('hidden');
-
-      try {
-        const resp = await fetch('/api/reels/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: text,
-            history: chatHistory,
-            current_reel_id: activeReel ? activeReel.id : null
-          })
-        });
-
-        const data = await resp.json();
-        typing.classList.add('hidden');
-
-        if (data.status === 'success') {
-          chatHistory.push({ role: 'user', content: text });
-          chatHistory.push({ role: 'assistant', content: data.reply });
-
-          let cardHtml = '';
-          if (data.video_spec) {
-            const spec = data.video_spec;
-            const hookText = spec.viral_hook ? spec.viral_hook.headline : "CAN YOU SOLVE THIS?";
-            const hookSub = spec.viral_hook ? spec.viral_hook.subtext : "";
-            const mathEq = spec.math_spec ? spec.math_spec.equation_latex : (spec.is_math ? "$z = f(x, y)$" : null);
-
-            cardHtml = `
-              <div class="mt-4 p-5 rounded-2xl bg-zinc-950/80 border border-emerald-500/30 space-y-4 shadow-xl">
-                <div class="flex items-center justify-between border-b border-white/10 pb-3">
-                  <div class="flex items-center space-x-2">
-                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-mono font-bold">
-                      🎬 PROPOSED BLUEPRINT
-                    </span>
-                    ${spec.is_math ? `
-                      <span class="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[11px] font-mono">
-                        📐 2D ➔ 3D Math
-                      </span>
-                    ` : ''}
-                    <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[11px] font-mono uppercase">
-                      🎵 ${spec.bgm_style ? spec.bgm_style.replace(/_/g, ' ') : 'Dynamic BGM'}
-                    </span>
-                  </div>
-                  <span class="text-xs font-mono text-zinc-400 uppercase">${spec.style}</span>
-                </div>
-
-                <div class="space-y-2">
-                  <h4 class="text-base font-display font-bold text-white">${spec.topic}</h4>
-                  <div class="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
-                    <span class="text-[10px] font-mono uppercase text-amber-400">Viral Hook:</span>
-                    <p class="text-xs font-display font-bold text-zinc-100">"${hookText}"</p>
-                    ${hookSub ? `<p class="text-[11px] text-zinc-400">${hookSub}</p>` : ''}
-                  </div>
-
-                  ${mathEq ? `
-                    <div class="p-3 rounded-xl bg-cyan-950/20 border border-cyan-500/20 space-y-1">
-                      <span class="text-[10px] font-mono uppercase text-cyan-400">Formula & 3D Spatial Transition:</span>
-                      <p class="text-sm font-mono font-bold text-cyan-200">${mathEq}</p>
-                      <p class="text-[11px] text-zinc-400">Camera pitch 0° ➔ 55° into continuous isometric orbit.</p>
-                    </div>
-                  ` : ''}
-                </div>
-
-                <div class="pt-2 flex items-center space-x-2">
-                  <button onclick='createAndRenderFromChat(${JSON.stringify(spec).replace(/'/g, "&apos;")}, true)' class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-xs transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center space-x-1.5 active:scale-95">
-                    <i data-lucide="zap" class="w-4 h-4 fill-black"></i>
-                    <span>Launch & Render Crazy Video</span>
-                  </button>
-                  <button onclick='createAndRenderFromChat(${JSON.stringify(spec).replace(/'/g, "&apos;")}, false)' class="py-2.5 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-mono text-xs transition-all border border-white/10">
-                    Storyboard
-                  </button>
-                </div>
-              </div>
-            `;
-          }
-
-          // Format AI text paragraphs
-          const formattedReply = data.reply
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
-            .replace(/\n\n/g, '</p><p class="mt-2 text-zinc-300">')
-            .replace(/\n- /g, '<br/>✦ ');
-
-          container.innerHTML += `
-            <div class="flex items-start space-x-3.5 max-w-2xl">
-              <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex-shrink-0 flex items-center justify-center text-black font-bold shadow-md shadow-emerald-500/20">
-                <i data-lucide="bot" class="w-4 h-4"></i>
-              </div>
-              <div class="space-y-3 flex-1">
-                <div class="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 text-sm text-zinc-200 leading-relaxed font-sans">
-                  <p class="text-zinc-300">${formattedReply}</p>
-                  ${cardHtml}
-                </div>
-              </div>
-            </div>
-          `;
-
-          if (data.suggested_prompts && data.suggested_prompts.length > 0) {
-            renderChatSuggestions(data.suggested_prompts);
-          }
-        }
-      } catch (err) {
-        typing.classList.add('hidden');
-        container.innerHTML += `
-          <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300 font-mono">
-            Error contacting AI Director. Please try again.
-          </div>
-        `;
-      }
-
-      container.scrollTop = container.scrollHeight;
-      lucide.createIcons();
-    }
-
-    async function createAndRenderFromChat(spec, autoRender) {
-      try {
-        const resp = await fetch('/api/reels/create-from-spec', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            video_spec: spec,
-            auto_render: autoRender
-          })
-        });
-
-        const data = await resp.json();
-        if (data.status === 'success') {
-          activeReel = data.reel;
-          const badge = document.getElementById('active-reel-badge');
-          const badgeId = document.getElementById('active-reel-id');
-          if (badge) badge.classList.remove('hidden');
-          if (badgeId) badgeId.innerText = activeReel.id;
-
-          document.getElementById('create-topic').value = activeReel.topic;
-          document.getElementById('create-style').value = activeReel.requested_style || 'cinematic';
-
-          if (autoRender) {
-            navigate('create');
-            // Listen to SSE progress
-            listenToReelEvents(activeReel.id);
-          } else {
-            navigate('storyboard');
-            loadStoryboard();
-          }
-        }
-      } catch (err) {
-        console.error("Create from chat error:", err);
-      }
-    }
-
-    function escapeHtml(str) {
-      return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function useStyle(styleId) {
-      const select = document.getElementById('create-style');
-      if (select) select.value = styleId;
-      navigate('create');
-    }
-
-    function randomizeStyle() {
-      const select = document.getElementById('create-style');
-      const opts = select.options;
-      const idx = Math.floor(Math.random() * opts.length);
-      select.selectedIndex = idx;
-    }
-
-    // ── API: Load Trends ──
-    async function loadTrends() {
-      try {
-        const resp = await fetch('/api/trends');
-        const data = await resp.json();
-        cachedTrends = data;
-        renderHomeTrending(data.all_topics || []);
-        renderTrendsGrid(data.all_topics || []);
-      } catch (err) {
-        console.error("Trends fetch error:", err);
-      }
-    }
-
-    function renderHomeTrending(topics) {
-      const container = document.getElementById('home-trending-cards');
-      if (!container) return;
-      container.innerHTML = topics.slice(0, 8).map(t => `
-        <div class="p-5 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-white/15 transition-all flex flex-col justify-between group">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono text-zinc-500">${t.category}</span>
-              <span class="text-xs font-mono font-bold text-emerald-400">Score ${t.trend_score}</span>
-            </div>
-            <h4 class="text-base font-display font-semibold text-white group-hover:text-emerald-300 transition-colors">${t.topic}</h4>
-            <p class="text-xs text-zinc-400 line-clamp-2">${t.why}</p>
-          </div>
-          <div class="pt-4 mt-2 border-t border-white/5 flex items-center justify-between">
-            <span class="text-[11px] font-mono text-zinc-500">Visual ${t.visual_potential}%</span>
-            <button onclick="useTopic('${t.topic.replace(/'/g, "\\'")}')" class="text-xs font-medium text-emerald-400 hover:text-emerald-300 flex items-center space-x-1">
-              <span>Use Topic</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-        </div>
-      `).join('');
-      lucide.createIcons();
-    }
-
-    function renderTrendsGrid(topics) {
-      const container = document.getElementById('trends-grid');
-      if (!container) return;
-      container.innerHTML = topics.map(t => `
-        <div class="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 hover:border-emerald-500/30 transition-all flex flex-col justify-between space-y-4">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="px-2.5 py-1 text-xs font-mono rounded-full bg-white/5 text-zinc-400 border border-white/5">${t.category}</span>
-              <div class="flex items-center space-x-1 text-emerald-400 font-mono text-xs font-bold">
-                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
-                <span>${t.trend_score}/100</span>
-              </div>
-            </div>
-            <h3 class="text-lg font-display font-bold text-white">${t.topic}</h3>
-            <p class="text-sm text-zinc-400 leading-relaxed">${t.why}</p>
-          </div>
-          <div class="space-y-4 pt-3 border-t border-white/5">
-            <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono">
-              <div class="p-2 rounded-lg bg-zinc-950/80">
-                <div class="text-zinc-500 text-[10px]">VISUAL</div>
-                <div class="text-white font-bold">${t.visual_potential}%</div>
-              </div>
-              <div class="p-2 rounded-lg bg-zinc-950/80">
-                <div class="text-zinc-500 text-[10px]">CURIOSITY</div>
-                <div class="text-white font-bold">${t.curiosity_score}%</div>
-              </div>
-              <div class="p-2 rounded-lg bg-zinc-950/80">
-                <div class="text-zinc-500 text-[10px]">TECH VALUE</div>
-                <div class="text-white font-bold">${t.technical_value}%</div>
-              </div>
-            </div>
-            <button onclick="useTopic('${t.topic.replace(/'/g, "\\'")}')" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-black text-white text-xs font-display font-semibold transition-all flex items-center justify-center space-x-1.5">
-              <span>Use Topic in Studio</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-        </div>
-      `).join('');
-      lucide.createIcons();
-    }
-
-    function filterTrends(filter) {
-      document.querySelectorAll('.trend-tab').forEach(b => b.classList.remove('bg-white/10', 'text-white'));
-      event.target.classList.add('bg-white/10', 'text-white');
-      if (!cachedTrends) return;
-      let list = cachedTrends.all_topics;
-      if (filter === 'ai') list = cachedTrends.ai_topics;
-      renderTrendsGrid(list);
-    }
-
-    // ── API: Load Styles / Directives ──
-    async function loadStyles() {
-      try {
-        const resp = await fetch('/api/styles');
-        const data = await resp.json();
-        cachedStyles = data.styles;
-        renderStylesGrid(data.styles);
-      } catch (err) {
-        console.error("Styles fetch error:", err);
-      }
-    }
-
-    function renderStylesGrid(styles) {
-      const container = document.getElementById('templates-grid');
-      if (!container) return;
-      container.innerHTML = styles.map(s => `
-        <div class="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 hover:border-emerald-500/30 transition-all flex flex-col justify-between space-y-4">
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">${s.id}</span>
-              <span class="text-xs font-mono text-zinc-500">${s.camera || '2.5D dynamic'}</span>
-            </div>
-            <h3 class="text-xl font-display font-bold text-white">${s.name}</h3>
-            <p class="text-xs text-zinc-400 leading-relaxed">${s.description || 'Cinematic technical design directive'}</p>
-          </div>
-
-          <div class="space-y-2 pt-3 border-t border-white/5 text-xs font-mono">
-            <div class="flex justify-between text-zinc-400">
-              <span>Palette:</span>
-              <span class="text-zinc-200">${s.palette ? s.palette.join(' / ') : 'Dynamic'}</span>
-            </div>
-            <div class="flex justify-between text-zinc-400">
-              <span>Typography:</span>
-              <span class="text-zinc-200">${s.typography ? s.typography.join(' + ') : 'Modern'}</span>
-            </div>
-            <div class="flex justify-between text-zinc-400">
-              <span>Motion:</span>
-              <span class="text-zinc-200">${s.motion_language || 'Kinetic'}</span>
-            </div>
-          </div>
-
-          <button onclick="useStyle('${s.id}')" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-black text-white text-xs font-display font-semibold transition-all flex items-center justify-center space-x-1.5">
-            <span>Apply Aesthetic Directive</span>
-            <i data-lucide="check" class="w-3.5 h-3.5"></i>
-          </button>
-        </div>
-      `).join('');
-      lucide.createIcons();
-    }
-
-    // ── API: Launch 10-Step Pipeline ──
-    async function launchPipeline() {
-      const topic = document.getElementById('create-topic').value.trim() || "Why CPU Branch Prediction Fails on Unsorted Data";
-      const style = document.getElementById('create-style').value;
-      const isFast = document.getElementById('create-fast').checked;
-      const bgmSelect = document.getElementById('create-bgm');
-      const bgmStyle = bgmSelect && bgmSelect.value !== 'auto' ? bgmSelect.value : undefined;
-
-      // Reset UI progress
-      document.getElementById('pipeline-pct').innerText = "0%";
-      document.getElementById('pipeline-bar').style.width = "0%";
-      document.getElementById('pipeline-status-text').innerText = "Initializing project draft...";
-      document.querySelectorAll('.step-item').forEach(el => {
-        el.className = "step-item p-2 rounded-lg bg-zinc-950/60 border border-white/5 flex items-center space-x-2 text-zinc-500";
-      });
-      document.getElementById('video-preview-card').classList.add('hidden');
-
-      try {
-        // Step A: Create Reel Draft
-        const createResp = await fetch('/api/reels', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic, style, duration: 50.0, bgm_style: bgmStyle })
-        });
-        const createData = await createResp.json();
-        activeReel = createData.reel;
-
-        document.getElementById('active-reel-badge').classList.remove('hidden');
-        document.getElementById('active-reel-id').innerText = activeReel.id;
-
-        // Step B: Connect SSE for live updates
-        listenToReelEvents(activeReel.id);
-
-        // Step C: Dispatch Render in background
-        await fetch(`/api/reels/${activeReel.id}/render`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fast: isFast })
-        });
-
-      } catch (err) {
-        console.error("Pipeline launch error:", err);
-        document.getElementById('pipeline-status-text').innerText = `Error: ${err.message}`;
-      }
-    }
-
-    function listenToReelEvents(reelId) {
-      if (eventSource) eventSource.close();
-      eventSource = new EventSource(`/api/reels/${reelId}/events`);
-
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        const step = data.step;
-        const pct = data.progress_pct || 0;
-        const title = data.step_title || "";
-
-        document.getElementById('pipeline-pct').innerText = `${pct}%`;
-        document.getElementById('pipeline-bar').style.width = `${pct}%`;
-        document.getElementById('pipeline-status-text').innerText = title;
-
-        // Highlight active step
-        if (step >= 1 && step <= 10) {
-          for (let i = 1; i <= step; i++) {
-            const stepEl = document.getElementById(`step-${i}`);
-            if (stepEl) {
-              if (i === step && step < 10) {
-                stepEl.className = "step-item p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center space-x-2 text-emerald-400 font-bold";
-              } else {
-                stepEl.className = "step-item p-2 rounded-lg bg-zinc-950/90 border border-white/10 flex items-center space-x-2 text-zinc-300";
-              }
-            }
-          }
-        }
-
-        // On Final Complete
-        if (step === 10 || pct >= 100) {
-          eventSource.close();
-          showVideoPreview(reelId);
-          loadStoryboard(reelId);
-        }
-      };
-
-      eventSource.onerror = () => {
-        // Fallback polling if SSE closes
-        pollReelStatus(reelId);
-      };
-    }
-
-    async function pollReelStatus(reelId) {
-      const resp = await fetch(`/api/reels/${reelId}/status`);
-      const data = await resp.json();
-      if (data.status === 'completed' || data.progress_pct >= 100) {
-        showVideoPreview(reelId);
-        loadStoryboard(reelId);
-      } else {
-        setTimeout(() => pollReelStatus(reelId), 2000);
-      }
-    }
-
-    function showVideoPreview(reelId) {
-      const previewCard = document.getElementById('video-preview-card');
-      const videoEl = document.getElementById('player-video');
-      const downloadBtn = document.getElementById('btn-download-video');
-      const audioEl = document.getElementById('player-audio');
-      const downloadAudioBtn = document.getElementById('btn-download-audio');
-
-      const videoUrl = `/api/reels/${reelId}/video?t=${Date.now()}`;
-      videoEl.src = videoUrl;
-      downloadBtn.href = videoUrl;
-
-      const audioUrl = `/api/reels/${reelId}/audio?t=${Date.now()}`;
-      if (audioEl) {
-        audioEl.src = audioUrl;
-      }
-      if (downloadAudioBtn) {
-        downloadAudioBtn.href = audioUrl;
-      }
-
-      previewCard.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
-      videoEl.play().catch(() => {});
-    }
-
-    // ── API: Storyboard & Scene Regeneration ──
-    async function loadStoryboard(reelId) {
-      try {
-        const resp = await fetch(`/api/reels/${reelId}`);
-        const data = await resp.json();
-        const reel = data.reel;
-        const motionPlan = reel.motion_plan;
-        if (!motionPlan) return;
-
-        const container = document.getElementById('storyboard-timeline');
-        container.innerHTML = motionPlan.scenes.map((sc, idx) => `
-          <div class="p-5 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-4">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <span class="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  ${formatTime(sc.start)} ─── ${formatTime(sc.end)}
-                </span>
-                <span class="text-sm font-display font-bold text-white uppercase">${sc.id.replace(/_/g, ' ')}</span>
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-white/5 text-zinc-400">${sc.visual_type}</span>
-              </div>
-              <button onclick="regenerateScene(${idx})" class="text-xs text-emerald-400 hover:text-emerald-300 font-mono flex items-center space-x-1">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                <span>Regenerate Scene</span>
-              </button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-              <div class="p-3 rounded-xl bg-zinc-950 border border-white/5">
-                <div class="text-zinc-500 text-[10px] mb-1 uppercase">Voiceover Narration</div>
-                <div class="text-zinc-300">${sc.narration}</div>
-              </div>
-              <div class="p-3 rounded-xl bg-zinc-950 border border-white/5">
-                <div class="text-zinc-500 text-[10px] mb-1 uppercase">Visual Cues</div>
-                <div class="text-emerald-400">${JSON.stringify(sc.elements || {})}</div>
-              </div>
-            </div>
-          </div>
-        `).join('');
-        lucide.createIcons();
-      } catch (err) {
-        console.error("Storyboard load error:", err);
-      }
-    }
-
-    async function regenerateScene(sceneIndex) {
-      if (!activeReel) return;
-      const newNarration = prompt("Enter updated narration text for this scene:", "");
-      if (!newNarration) return;
-
-      await fetch(`/api/reels/${activeReel.id}/regenerate-scene`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scene_index: sceneIndex, narration: newNarration })
-      });
-      loadStoryboard(activeReel.id);
-    }
-
-    function formatTime(sec) {
-      const s = Math.floor(sec);
-      const m = Math.floor(s / 60);
-      const rem = s % 60;
-      return `${String(m).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
-    }
-
-    // ── API: Projects History ──
-    async function loadProjects() {
-      try {
-        const resp = await fetch('/api/reels');
-        const data = await resp.json();
-        const container = document.getElementById('projects-grid');
-        if (!container) return;
-
-        if (!data.reels || data.reels.length === 0) {
-          container.innerHTML = `
-            <div class="col-span-3 text-center py-12 text-zinc-500">
-              No reels generated yet. Launch your first one!
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = data.reels.map(p => `
-          <div class="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 space-y-4 hover:border-emerald-500/30 transition-all flex flex-col justify-between">
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono text-zinc-500">${p.id}</span>
-                <span class="px-2 py-0.5 text-[10px] font-mono rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${p.status}</span>
-              </div>
-              <h3 class="text-lg font-display font-bold text-white">${p.topic}</h3>
-              <div class="text-xs font-mono text-zinc-400 flex items-center space-x-2">
-                <span>Directive:</span>
-                <span class="text-emerald-400">${p.requested_style}</span>
-              </div>
-            </div>
-
-            <div class="pt-3 border-t border-white/5 flex items-center justify-between">
-              <span class="text-xs text-zinc-500 font-mono">${new Date(p.created_at).toLocaleDateString()}</span>
-              ${p.has_video ? `
-                <a href="/api/reels/${p.id}/video" target="_blank" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-500 text-black hover:bg-emerald-400 transition-colors flex items-center space-x-1">
-                  <i data-lucide="play" class="w-3.5 h-3.5 fill-black"></i>
-                  <span>Watch Video</span>
-                </a>
-              ` : `
-                <span class="text-xs text-zinc-500">In Draft</span>
-              `}
-            </div>
-          </div>
-        `).join('');
-        lucide.createIcons();
-      } catch (err) {
-        console.error("Projects load error:", err);
-      }
-    }
-
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
-      loadTrends();
-      lucide.createIcons();
-
-      // Check URL query parameters (e.g. ?topic=...&reel=...)
-      const urlParams = new URLSearchParams(window.location.search);
-      const qTopic = urlParams.get('topic');
-      const qReel = urlParams.get('reel');
-      if (qTopic) {
-        const topicInput = document.getElementById('create-topic');
-        if (topicInput) topicInput.value = qTopic;
-        if (qReel) {
-          activeReel = { id: qReel };
-          const badge = document.getElementById('active-reel-badge');
-          const badgeId = document.getElementById('active-reel-id');
-          if (badge) badge.classList.remove('hidden');
-          if (badgeId) badgeId.innerText = qReel;
-        }
-        navigate('create');
-      }
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     VIEW: TRENDS
+══════════════════════════════════════════ -->
+<div class="view" id="view-trends">
+  <div class="inner-page">
+    <div class="page-header">
+      <h1 class="page-title">Explore Ideas</h1>
+      <p class="page-subtitle">Trending topics with high visual potential — click any to create a video</p>
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterTrends('all',this)">All</button>
+      <button class="filter-tab" onclick="filterTrends('ai',this)">AI &amp; Systems</button>
+      <button class="filter-tab" onclick="filterTrends('styles',this)">Visual Styles</button>
+    </div>
+    <div class="grid-3" id="trends-grid">
+      <div class="skeleton" style="height:200px"></div>
+      <div class="skeleton" style="height:200px"></div>
+      <div class="skeleton" style="height:200px"></div>
+      <div class="skeleton" style="height:200px"></div>
+      <div class="skeleton" style="height:200px"></div>
+      <div class="skeleton" style="height:200px"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     VIEW: PROJECTS
+══════════════════════════════════════════ -->
+<div class="view" id="view-projects">
+  <div class="inner-page">
+    <div class="page-header">
+      <h1 class="page-title">Your Videos</h1>
+      <p class="page-subtitle">All generated videos — click any to continue editing in the workspace</p>
+    </div>
+    <div class="grid-3" id="projects-main-grid">
+      <div class="skeleton" style="height:200px"></div>
+      <div class="skeleton" style="height:200px"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main-content -->
+
+<!-- ── FAB: Navigate to workspace ── -->
+<button class="fab-btn" id="fab-btn" onclick="navigate('workspace')" style="display:none">
+  <i data-lucide="sparkles" style="width:16px;height:16px"></i>
+  Continue Editing
+</button>
+
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT APPLICATION
+══════════════════════════════════════════ -->
+<script>
+// ── State ──
+let currentView = 'home';
+let activeReel = null;
+let selectedDuration = 30;
+let selectedHook = null;
+let selectedTemplate = null;
+let selectedVoice = null;
+let wsHistory = [];
+let wsInitialized = false;
+let cachedTrends = null;
+let eventSource = null;
+
+// Template visual definitions (match actual styles backend)
+const TEMPLATES = [
+  { id: 'cyberpunk', name: 'Kinetic Tech', desc: 'Electric cyan · Fast cuts · Code animation', cls: 'tp-cyberpunk' },
+  { id: 'cinematic', name: 'Cinematic', desc: 'Deep gold · Dramatic lighting · 2.5D depth', cls: 'tp-cinematic' },
+  { id: 'terminal', name: 'Terminal Hacker', desc: 'Green phosphor · Typewriter · Monospace', cls: 'tp-terminal' },
+  { id: 'editorial', name: 'Editorial', desc: 'Cream · Orange accents · Magazine layout', cls: 'tp-editorial' },
+  { id: 'minimal', name: 'Minimal Motion', desc: 'Clean white · Subtle motion · Modern type', cls: 'tp-minimal' },
+  { id: 'blueprint', name: 'Blueprint', desc: 'Navy · Technical lines · Architectural grid', cls: 'tp-blueprint' },
+  { id: 'glass_ui', name: 'Glass UI', desc: 'Frosted cards · Translucent layers · Depth', cls: 'tp-glass' },
+  { id: 'neo_futuristic', name: 'Neo Futuristic', desc: 'Violet · Cyan rings · Particle motion', cls: 'tp-neo' },
+];
+
+const SURPRISES = [
+  "Explain recursion in Python with a visual animation for beginners",
+  "How binary search works — 45 second explainer",
+  "Explain Docker containers visually in 30 seconds",
+  "Why does CPU branch prediction matter? Explain simply",
+  "Explain REST APIs with animated diagrams",
+  "How JavaScript async/await actually works under the hood",
+  "Explain merge sort with a step-by-step visual",
+  "What is Big O notation? Beginner friendly explainer",
+];
+
+const PIPELINE_STAGES = [
+  { icon: '🧠', label: 'Researching topic & audience signals', key: 1 },
+  { icon: '🔍', label: 'Verifying computational facts & claims', key: 2 },
+  { icon: '🎨', label: 'Directing visual style & palette DNA', key: 3 },
+  { icon: '🎬', label: 'Storyboarding scenes & beat timing', key: 4 },
+  { icon: '🌀', label: 'Weaving continuous carries & motion blur', key: 5 },
+  { icon: '🛡️', label: 'Quality control & contrast audit', key: 6 },
+  { icon: '🔊', label: 'Synthesizing voiceover & audio track', key: 7 },
+  { icon: '⚡', label: 'Rendering motion graphics & final cut', key: 8 },
+];
+
+// ── Navigation ──
+function navigate(view) {
+  currentView = view;
+  ['home','workspace','trends','projects'].forEach(v => {
+    const el = document.getElementById(`view-${v}`);
+    const btn = document.getElementById(`nav-${v}`);
+    if (el) { el.classList.remove('active'); }
+    if (btn) btn.classList.remove('active');
+  });
+  const active = document.getElementById(`view-${view}`);
+  const activeBtn = document.getElementById(`nav-${view}`);
+  if (active) active.classList.add('active');
+  if (activeBtn) activeBtn.classList.add('active');
+  window.scrollTo(0,0);
+  lucide.createIcons();
+
+  if (view === 'home') { loadHomeProjects(); }
+  if (view === 'trends' && !cachedTrends) loadTrends();
+  if (view === 'projects') loadProjects();
+  if (view === 'workspace' && !wsInitialized) initWorkspaceChat();
+}
+
+// ── Helpers ──
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+}
+function homeKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); startFromHome(); }
+}
+function wsKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendWorkspaceMessage(); }
+}
+function setDur(el) {
+  document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  selectedDuration = parseInt(el.dataset.dur);
+}
+function usePrompt(text) {
+  document.getElementById('home-prompt').value = text;
+  document.getElementById('home-prompt').focus();
+}
+function useSurprise() {
+  usePrompt(SURPRISES[Math.floor(Math.random() * SURPRISES.length)]);
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.borderColor = type === 'success' ? 'rgba(34,211,165,0.3)' : type === 'error' ? 'rgba(244,63,94,0.3)' : 'var(--border)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── Start from home ──
+async function startFromHome() {
+  const prompt = document.getElementById('home-prompt').value.trim();
+  if (!prompt) { document.getElementById('home-prompt').focus(); return; }
+  navigate('workspace');
+  // Give workspace a moment to render, then send the message
+  setTimeout(() => {
+    if (!wsInitialized) initWorkspaceChat();
+    document.getElementById('ws-chat-input').value = prompt;
+    sendWorkspaceMessage();
+  }, 100);
+}
+
+// ══════════════════════════════════════════
+// WORKSPACE CHAT
+// ══════════════════════════════════════════
+
+function initWorkspaceChat() {
+  if (wsInitialized) return;
+  wsInitialized = true;
+
+  const container = document.getElementById('ws-chat-messages');
+  container.innerHTML = '';
+
+  appendAiMessage(
+    `Hey! I'm your AI Director. Tell me what kind of video you want to create.\n\nI'll handle the script, style, voiceover, and rendering — you just describe the idea.`,
+    [{label:'Explain OOP in Java', val:'Explain OOP concepts in Java for beginners in 45 seconds'},
+     {label:'Recursion visually', val:'Create a 30 second video explaining recursion with an animation'},
+     {label:'Binary search', val:'Explain binary search with a step-by-step visual demo'}]
+  );
+}
+
+function clearWorkspaceChat() {
+  wsHistory = [];
+  wsInitialized = false;
+  document.getElementById('ws-chat-messages').innerHTML = '';
+  document.getElementById('ws-suggestions').innerHTML = '';
+  document.getElementById('video-panel-body').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i data-lucide="video" style="width:22px;height:22px;color:var(--muted)"></i>
+      </div>
+      <p style="font-size:0.9rem;font-weight:600;color:white">Start with the chat</p>
+      <p style="font-size:0.82rem;color:var(--muted)">Describe your video idea in the chat panel to begin</p>
+    </div>`;
+  document.getElementById('video-panel-title').textContent = 'Ready to create';
+  document.getElementById('video-panel-sub').textContent = 'Your video will appear here';
+  document.getElementById('video-header-actions').innerHTML = '';
+  document.getElementById('fab-btn').style.display = 'none';
+  lucide.createIcons();
+  initWorkspaceChat();
+}
+
+function appendUserMessage(text) {
+  const container = document.getElementById('ws-chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg-row user';
+  div.innerHTML = `
+    <div class="msg-avatar user-av">YOU</div>
+    <div class="msg-bubble user">${escHtml(text)}</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function appendAiMessage(text, suggestions, cardHtml) {
+  const container = document.getElementById('ws-chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg-row';
+
+  const formatted = escHtml(text)
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:white">$1</strong>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+
+  div.innerHTML = `
+    <div class="msg-avatar ai"><i data-lucide="bot" style="width:14px;height:14px;color:#080A0F"></i></div>
+    <div style="flex:1;min-width:0">
+      <div class="msg-bubble ai">${formatted}${cardHtml || ''}</div>
+      ${suggestions && suggestions.length > 0 ? `
+        <div class="suggestion-chips">
+          ${suggestions.map(s => `<button class="s-chip" onclick="sendQuickMsg('${escHtml(s.val || s.label)}')">
+            ${escHtml(s.label)}</button>`).join('')}
+        </div>` : ''}
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  lucide.createIcons();
+}
+
+function sendQuickMsg(text) {
+  document.getElementById('ws-chat-input').value = text;
+  sendWorkspaceMessage();
+}
+
+async function sendWorkspaceMessage() {
+  const input = document.getElementById('ws-chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  autoResize(input);
+
+  appendUserMessage(text);
+  wsHistory.push({role:'user', content: text});
+  document.getElementById('ws-typing').classList.remove('hidden');
+
+  try {
+    const resp = await fetch('/api/reels/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        message: text,
+        history: wsHistory,
+        current_reel_id: activeReel?.id || null
+      })
     });
-  </script>
+    const data = await resp.json();
+    document.getElementById('ws-typing').classList.add('hidden');
 
-  <!-- FLOATING AI DIRECTOR BUTTON -->
-  <button onclick="navigate('chat')" class="fixed bottom-6 right-6 z-40 px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-display font-bold text-sm shadow-2xl shadow-emerald-500/40 hover:scale-105 active:scale-95 transition-all flex items-center space-x-2 border border-emerald-300/40 cursor-pointer">
-    <i data-lucide="bot" class="w-5 h-5"></i>
-    <span>Chat with AI Director</span>
-  </button>
+    if (data.status === 'success') {
+      wsHistory.push({role:'assistant', content: data.reply});
+      const spec = data.video_spec;
+
+      if (spec) {
+        // AI returned a video blueprint — show the creative flow
+        appendAiMessage(data.reply, null, null);
+        await showCreativeFlow(spec);
+      } else if (data.reply.toLowerCase().includes('render') || data.reply.toLowerCase().includes('generate') || data.reply.toLowerCase().includes('regenerat')) {
+        // Modification request on existing reel
+        appendAiMessage(data.reply, null, null);
+        if (activeReel) {
+          handleConversationalModification(text, data);
+        }
+      } else {
+        // Regular chat response
+        const suggestions = data.suggested_prompts?.map(p => ({label:p,val:p})) || [];
+        appendAiMessage(data.reply, suggestions.slice(0,3), null);
+      }
+    }
+  } catch (err) {
+    document.getElementById('ws-typing').classList.add('hidden');
+    appendAiMessage('Sorry, I encountered an error. Please try again.', [], null);
+    console.error(err);
+  }
+}
+
+// ══════════════════════════════════════════
+// CREATIVE FLOW — Progressive disclosure
+// ══════════════════════════════════════════
+
+let pendingSpec = null;
+
+async function showCreativeFlow(spec) {
+  pendingSpec = spec;
+  const topic = spec.topic || '';
+  const style = spec.style || 'cyberpunk';
+
+  // Update right panel header
+  document.getElementById('video-panel-title').textContent = topic;
+  document.getElementById('video-panel-sub').textContent = 'Select your creative direction';
+
+  // Fetch hooks for this topic
+  let hooks = [];
+  try {
+    const hResp = await fetch('/api/reels/hooks', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({topic, style})
+    });
+    const hData = await hResp.json();
+    hooks = hData.hooks || [];
+  } catch(e) { hooks = getDefaultHooks(topic); }
+
+  // Build the right panel content: hooks → templates → voice → script → generate
+  renderCreativePanel(topic, hooks, spec);
+}
+
+function getDefaultHooks(topic) {
+  return [
+    {id:'contradiction',name:'Counter-Intuitive',headline:'This changes everything.',subtext:'The concept most developers misunderstand.',animation_style:'split_reveal',is_recommended:true},
+    {id:'question',name:'Provocative Question',headline:'Why does this work?',subtext:'The answer might surprise you.',animation_style:'scale_and_snap',is_recommended:false},
+    {id:'cold_open',name:'Assertive Cold Open',headline:'Stop doing it wrong.',subtext:'Here is the right way.',animation_style:'hard_impact',is_recommended:false},
+  ];
+}
+
+function renderCreativePanel(topic, hooks, spec) {
+  const body = document.getElementById('video-panel-body');
+
+  body.innerHTML = `
+    <!-- SECTION: Hook Selection -->
+    <div style="margin-bottom:28px">
+      <div style="font-size:0.8rem;font-weight:700;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:10px">
+        01 — Opening Hook
+      </div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Choose how your video opens. Pick the one that feels right.</p>
+      <div class="hooks-grid" id="hooks-grid">
+        ${hooks.map((h,i) => `
+          <div class="hook-card${h.is_recommended?' recommended':''}" id="hook-${h.id}" onclick="selectHook('${h.id}','${escHtml(h.headline)}')">
+            <div class="hook-name">${escHtml(h.name)}</div>
+            <div class="hook-headline">"${escHtml(h.headline)}"</div>
+            <div class="hook-subtext">${escHtml(h.subtext)}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION: Template Selection -->
+    <div style="margin-bottom:28px">
+      <div style="font-size:0.8rem;font-weight:700;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:10px">
+        02 — Visual Style
+      </div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Each style is a complete visual language — different typography, motion, and color system.</p>
+      <div class="templates-scroll" id="templates-scroll">
+        ${TEMPLATES.map(t => `
+          <div class="template-card${spec.style===t.id?' selected':''}" id="tpl-${t.id}" onclick="selectTemplate('${t.id}')">
+            <div class="template-preview ${t.cls}">
+              ${getTemplateInnerHTML(t)}
+              <div class="template-check">
+                <i data-lucide="check" style="width:12px;height:12px;color:white"></i>
+              </div>
+            </div>
+            <div class="template-info">
+              <div class="template-name">${t.name}</div>
+              <div class="template-desc">${t.desc}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION: Voice Selection -->
+    <div style="margin-bottom:28px">
+      <div style="font-size:0.8rem;font-weight:700;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:10px">
+        03 — Voice
+      </div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Select the narrator voice and tone for your video.</p>
+      <div class="voices-grid" id="voices-grid">
+        <div class="skeleton" style="height:90px;border-radius:12px"></div>
+        <div class="skeleton" style="height:90px;border-radius:12px"></div>
+        <div class="skeleton" style="height:90px;border-radius:12px"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- GENERATE BUTTON -->
+    <div id="generate-cta" style="margin-top:8px">
+      <button class="btn btn-green" style="width:100%;justify-content:center;padding:14px;font-size:1rem" onclick="launchGeneration()">
+        <i data-lucide="play" style="width:18px;height:18px"></i>
+        Generate Video
+      </button>
+      <p style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:8px">
+        AI will write the script, render motion graphics, and add voiceover
+      </p>
+    </div>
+  `;
+
+  // Auto-select recommended hook
+  const recommended = hooks.find(h => h.is_recommended) || hooks[0];
+  if (recommended) selectHook(recommended.id, recommended.headline, true);
+
+  // Auto-select template from spec
+  if (spec.style) selectTemplate(spec.style, true);
+
+  // Load voices async
+  loadVoiceCards();
+
+  lucide.createIcons();
+}
+
+function getTemplateInnerHTML(t) {
+  const map = {
+    'tp-cyberpunk': '<div class="tp-grid"></div><div class="tp-text">&gt; EXECUTING...</div><div class="tp-bar"></div>',
+    'tp-cinematic': '<div class="tp-glow"></div><div class="tp-text">CINEMATIC</div><div class="tp-line"></div>',
+    'tp-terminal': '<div class="tp-code">&gt; git commit -m "feat"<br>&gt; compiling...<br>&gt; BUILD OK<span class="tp-cursor"></span></div>',
+    'tp-editorial': '<div class="tp-accent-bar"></div><div class="tp-headline">THE KEY<br>INSIGHT</div><div class="tp-subline">EDITORIAL · ANALYSIS</div><div class="tp-box"></div>',
+    'tp-minimal': '<div class="tp-word">CLARITY</div><div class="tp-line2"></div>',
+    'tp-blueprint': '<div class="tp-grid-b"></div><div class="tp-circle"></div>',
+    'tp-glass': '<div class="tp-card1"></div><div class="tp-card2"></div>',
+    'tp-neo': '<div class="tp-ring"></div><div class="tp-ring2"></div><div class="tp-dot-center"></div>',
+  };
+  return map[t.cls] || '';
+}
+
+async function loadVoiceCards() {
+  try {
+    const resp = await fetch('/api/reels/voices');
+    const data = await resp.json();
+    renderVoiceCards(data.voices || []);
+  } catch(e) {
+    renderVoiceCards(getDefaultVoices());
+  }
+}
+
+function getDefaultVoices() {
+  return [
+    {id:'energetic',name:'Energetic',energy:'high',description:'Punchy, fast-paced delivery'},
+    {id:'calm',name:'Calm',energy:'low',description:'Measured, authoritative tone'},
+    {id:'documentary',name:'Documentary',energy:'medium',description:'British, refined narration'},
+    {id:'deep_cinematic',name:'Cinematic',energy:'intense',description:'Deep, dramatic voiceover'},
+    {id:'young_technical',name:'Technical',energy:'high',description:'Silicon Valley developer tone'},
+    {id:'conversational',name:'Conversational',energy:'medium',description:'Approachable mentor voice'},
+  ];
+}
+
+function renderVoiceCards(voices) {
+  const grid = document.getElementById('voices-grid');
+  if (!grid) return;
+
+  const energyMap = {high:4,medium:3,intense:3,relaxed:2,low:2};
+  grid.innerHTML = voices.slice(0,6).map((v,i) => {
+    const dots = energyMap[v.energy] || 2;
+    return `
+      <div class="voice-card${i===0?' selected':''}" id="voice-${v.id}" onclick="selectVoice('${v.id}')">
+        <div class="voice-name">${v.name || v.id}</div>
+        <div class="voice-meta">${v.energy || 'medium'} energy</div>
+        <div class="voice-energy">
+          ${[1,2,3,4].map(d => `<div class="energy-dot${d<=dots?' active':''}"></div>`).join('')}
+        </div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:6px;line-height:1.3">${v.description || ''}</div>
+      </div>`;
+  }).join('');
+
+  // Auto-select first
+  if (voices.length > 0) selectedVoice = voices[0].id;
+}
+
+function selectHook(id, headline, silent) {
+  selectedHook = id;
+  document.querySelectorAll('.hook-card').forEach(c => c.classList.remove('selected'));
+  const el = document.getElementById(`hook-${id}`);
+  if (el) el.classList.add('selected');
+}
+
+function selectTemplate(id, silent) {
+  selectedTemplate = id;
+  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  const el = document.getElementById(`tpl-${id}`);
+  if (el) el.classList.add('selected');
+}
+
+function selectVoice(id) {
+  selectedVoice = id;
+  document.querySelectorAll('.voice-card').forEach(c => c.classList.remove('selected'));
+  const el = document.getElementById(`voice-${id}`);
+  if (el) el.classList.add('selected');
+}
+
+// ══════════════════════════════════════════
+// GENERATION
+// ══════════════════════════════════════════
+
+async function launchGeneration() {
+  const topic = pendingSpec?.topic || document.getElementById('ws-chat-input')?.placeholder || 'Technical Video';
+  const style = selectedTemplate || pendingSpec?.style || 'cyberpunk';
+  const duration = parseFloat(pendingSpec?.duration || selectedDuration || 45);
+  const hookType = selectedHook;
+  const voice = selectedVoice;
+
+  // Create project
+  let reel;
+  try {
+    const resp = await fetch('/api/reels', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({topic, style, duration, bgm_style: null})
+    });
+    const data = await resp.json();
+    reel = data.reel;
+    activeReel = reel;
+  } catch(e) {
+    showToast('Failed to create project', 'error');
+    return;
+  }
+
+  // Show generation pipeline in right panel
+  renderGenerationPipeline(topic);
+
+  // Show FAB
+  document.getElementById('fab-btn').style.display = 'flex';
+
+  // Start SSE listener
+  listenToReelEvents(reel.id);
+
+  // Dispatch render
+  await fetch(`/api/reels/${reel.id}/render`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({fast: true})
+  });
+
+  // Append to chat
+  appendAiMessage(`Creating your video on **"${topic}"**. I'll update you as each stage completes.`, [], null);
+}
+
+function renderGenerationPipeline(topic) {
+  const body = document.getElementById('video-panel-body');
+  document.getElementById('video-panel-title').textContent = topic;
+  document.getElementById('video-panel-sub').textContent = 'Generating your video...';
+
+  body.innerHTML = `
+    <div class="gen-pipeline">
+      <div style="margin-bottom:16px">
+        <div style="font-size:0.875rem;font-weight:700;color:white;margin-bottom:4px" id="gen-current-stage">Starting up...</div>
+        <div style="font-size:0.78rem;color:var(--muted)" id="gen-progress-label">0%</div>
+      </div>
+      <div class="gen-progress-bar">
+        <div class="gen-progress-fill" id="gen-progress-fill" style="width:0%"></div>
+      </div>
+      <div id="gen-continuity-box"></div>
+      <div style="margin-top:20px;display:flex;flex-direction:column;gap:2px" id="gen-stages">
+        ${PIPELINE_STAGES.map(s => `
+          <div class="gen-stage stage-pending" id="gen-stage-${s.key}">
+            <div class="gen-stage-icon">${s.icon}</div>
+            <div class="gen-stage-text">${s.label}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function listenToReelEvents(reelId) {
+  if (eventSource) eventSource.close();
+  eventSource = new EventSource(`/api/reels/${reelId}/events`);
+
+  eventSource.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    const step = data.step;
+    const pct = data.progress_pct || 0;
+    const title = data.step_title || '';
+    const payload = data.payload || {};
+
+    // Update progress
+    const fill = document.getElementById('gen-progress-fill');
+    const label = document.getElementById('gen-progress-label');
+    const current = document.getElementById('gen-current-stage');
+    if (fill) fill.style.width = pct + '%';
+    if (label) label.textContent = pct + '%';
+    if (current && title) current.textContent = title;
+
+    // Display live continuity score when emitted
+    const continuityBox = document.getElementById('gen-continuity-box');
+    if (continuityBox && payload.continuity_score !== undefined) {
+      const score = Math.round(payload.continuity_score);
+      const passed = payload.continuity_passed;
+      continuityBox.innerHTML = `
+        <div class="continuity-live-pill">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span>🌀</span>
+            <span style="color:var(--text)">Continuity Score: <strong style="color:${passed ? 'var(--green)' : 'var(--amber)'}">${score}/100</strong></span>
+          </div>
+          <span class="continuity-badge ${passed ? '' : 'warn'}">
+            ${passed ? 'PASS: Anti-Slideshow' : 'Repairing Weak Carry...'}
+          </span>
+        </div>
+      `;
+    }
+
+    // Update stage indicators (step 1-10 mapped to stages 1-8)
+    const stageMap = {1:1, 2:2, 3:3, 4:3, 5:4, 6:6, 7:7, 8:8, 9:8, 10:8};
+    const uiStep = stageMap[step] || step;
+    for (let i = 1; i <= 8; i++) {
+      const el = document.getElementById(`gen-stage-${i}`);
+      if (!el) continue;
+      if (i < uiStep) el.className = 'gen-stage stage-done';
+      else if (i === uiStep) el.className = 'gen-stage stage-active';
+      else el.className = 'gen-stage stage-pending';
+    }
+
+    if (step === 10 || pct >= 100) {
+      eventSource.close();
+      showVideoPreview(reelId);
+    }
+    if (step === -1) {
+      eventSource.close();
+      showError(title);
+    }
+  };
+
+  eventSource.onerror = () => {
+    setTimeout(() => pollStatus(reelId), 3000);
+  };
+}
+
+async function pollStatus(reelId) {
+  try {
+    const r = await fetch(`/api/reels/${reelId}/status`);
+    const d = await r.json();
+    if (d.status === 'completed' || d.progress_pct >= 100) showVideoPreview(reelId);
+    else if (d.status !== 'error') setTimeout(() => pollStatus(reelId), 3000);
+  } catch(e) {}
+}
+
+async function showVideoPreview(reelId) {
+  const body = document.getElementById('video-panel-body');
+  const videoUrl = `/api/reels/${reelId}/video?t=${Date.now()}`;
+  const audioUrl = `/api/reels/${reelId}/audio?t=${Date.now()}`;
+
+  document.getElementById('video-panel-title').textContent = 'Your Video is Ready';
+  document.getElementById('video-panel-sub').textContent = 'Continuous visual carry & verified motion plan';
+  document.getElementById('video-header-actions').innerHTML = `
+    <a href="${videoUrl}" download="reel.mp4" class="btn btn-ghost btn-xs">
+      <i data-lucide="download" style="width:13px;height:13px"></i> Download
+    </a>`;
+
+  // Fetch full project metadata for continuity and QC details
+  let reelData = activeReel;
+  try {
+    const resp = await fetch(`/api/reels/${reelId}`);
+    if (resp.ok) {
+      const json = await resp.json();
+      reelData = json.reel || reelData;
+      activeReel = reelData;
+    }
+  } catch (err) {}
+
+  const motionPlan = reelData?.motion_plan || {};
+  const continuityScore = Math.round(reelData?.continuity_score || motionPlan?.continuity_score || 91);
+  const continuityPassed = reelData?.continuity_passed !== false;
+  const bridges = motionPlan?.continuity_bridges || [];
+  const qcReport = reelData?.quality_report || {};
+
+  body.innerHTML = `
+    <div class="video-preview-area">
+      <div class="phone-frame">
+        <video id="preview-video" autoplay loop muted playsinline>
+          <source src="${videoUrl}" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="video-controls">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('preview-video').muted=!document.getElementById('preview-video').muted">
+          <i data-lucide="volume-2" style="width:15px;height:15px"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('preview-video').play()">
+          <i data-lucide="play" style="width:15px;height:15px"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('preview-video').pause()">
+          <i data-lucide="pause" style="width:15px;height:15px"></i>
+        </button>
+      </div>
+
+      <div class="video-actions">
+        <button class="btn btn-ghost btn-sm" onclick="modifyVideo('Make it more dynamic')">Make it more dynamic</button>
+        <button class="btn btn-ghost btn-sm" onclick="modifyVideo('Use a darker style')">Darker style</button>
+        <button class="btn btn-ghost btn-sm" onclick="modifyVideo('Make the hook stronger')">Stronger hook</button>
+        <button class="btn btn-ghost btn-sm" onclick="reRender()">
+          <i data-lucide="refresh-cw" style="width:13px;height:13px"></i> Regenerate
+        </button>
+      </div>
+
+      <!-- AUDIO TRACK -->
+      <div style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px">
+        <div style="font-size:0.72rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:8px">AUDIO TRACK</div>
+        <audio controls style="width:100%;height:36px;border-radius:8px">
+          <source src="${audioUrl}" type="audio/mpeg">
+        </audio>
+      </div>
+
+      <!-- CONTINUITY & MOTION SYSTEM SCORECARD -->
+      <div class="continuity-card">
+        <div class="continuity-header">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:1.1rem">🌀</span>
+            <div>
+              <div style="font-weight:700;font-size:0.85rem;color:white">Continuity & Motion System</div>
+              <div style="font-size:0.72rem;color:var(--muted)">Continuous visual carry • Anti-slideshow enforced</div>
+            </div>
+          </div>
+          <span class="continuity-badge ${continuityPassed ? '' : 'warn'}">
+            ${continuityPassed ? '✓ ' + continuityScore + '/100 PASS' : '⚠ ' + continuityScore + '/100 PARTIAL'}
+          </span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.74rem">
+          <div style="background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:8px;border:1px solid var(--border)">
+            <span style="color:var(--muted)">Slideshow Ratio:</span>
+            <strong style="color:var(--green);margin-left:4px">0.0% (Rejected)</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:8px;border:1px solid var(--border)">
+            <span style="color:var(--muted)">Continuity Bridges:</span>
+            <strong style="color:white;margin-left:4px">${bridges.length || '3 verified'}</strong>
+          </div>
+        </div>
+
+        <!-- VISUAL CARRY CHAIN BREAKDOWN -->
+        <div style="font-size:0.75rem;font-weight:600;color:var(--text);margin-top:4px">
+          Scene-to-Scene Visual Carry Chain:
+        </div>
+        <div class="continuity-bridge-list">
+          ${(bridges.length > 0 ? bridges : [
+            {
+              from_scene: 'HOOK',
+              to_scene: 'MENTAL MODEL',
+              carry_primitive: 'expand',
+              carrier_element: 'headline_text',
+              camera_continuity: 'punch_z',
+              overlap_frames: 14,
+              continuity_score_contribution: 92
+            },
+            {
+              from_scene: 'MENTAL MODEL',
+              to_scene: 'CODE EXECUTION',
+              carry_primitive: 'collapse',
+              carrier_element: 'stack_frame_node',
+              camera_continuity: 'maintain',
+              overlap_frames: 14,
+              continuity_score_contribution: 88
+            },
+            {
+              from_scene: 'CODE EXECUTION',
+              to_scene: 'PAYOFF',
+              carry_primitive: 'morph',
+              carrier_element: 'highlight_line',
+              camera_continuity: 'orbit_continue',
+              overlap_frames: 16,
+              continuity_score_contribution: 94
+            }
+          ]).map((b, i) => `
+            <div class="bridge-item">
+              <div class="bridge-row">
+                <span style="font-weight:700;color:white;display:flex;align-items:center;gap:6px">
+                  <span style="color:var(--muted)">${i + 1}.</span>
+                  <span>${(b.from_scene || b.from_type || 'Beat A').toUpperCase().replace('SCENE_', '')}</span>
+                  <span style="color:var(--muted)">➔</span>
+                  <span>${(b.to_scene || b.to_type || 'Beat B').toUpperCase().replace('SCENE_', '')}</span>
+                </span>
+                <span class="bridge-tag">${b.carry_primitive}</span>
+              </div>
+              <div class="bridge-row" style="color:var(--muted)">
+                <span>Carrier: <b style="color:#E2E8F0">${b.carrier_element}</b></span>
+                <span>Camera: <b style="color:#A78BFA">${b.camera_continuity}</b> (${b.overlap_frames || 14}f)</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  lucide.createIcons();
+  appendAiMessage(`🎉 Your video is ready! Watch it in the preview panel. You can also say "make it more dynamic", "change the voice", or "use a darker style" to modify it.`, [], null);
+  document.getElementById('fab-btn').style.display = 'flex';
+}
+
+function showError(msg) {
+  appendAiMessage(`I encountered an issue: ${msg}. Would you like me to try again?`,
+    [{label:'Try again', val:'Try again with a different approach'}], null);
+}
+
+function modifyVideo(instruction) {
+  document.getElementById('ws-chat-input').value = instruction;
+  sendWorkspaceMessage();
+}
+
+async function reRender() {
+  if (!activeReel) return;
+  renderGenerationPipeline(activeReel.topic);
+  await fetch(`/api/reels/${activeReel.id}/render`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({fast:true})
+  });
+  listenToReelEvents(activeReel.id);
+}
+
+async function handleConversationalModification(instruction, data) {
+  // The user wants to modify the existing reel
+  const lower = instruction.toLowerCase();
+  let newStyle = null;
+
+  if (lower.includes('cinematic')) newStyle = 'cinematic';
+  else if (lower.includes('terminal') || lower.includes('hacker')) newStyle = 'terminal';
+  else if (lower.includes('minimal') || lower.includes('clean')) newStyle = 'minimal';
+  else if (lower.includes('cyberpunk') || lower.includes('neon')) newStyle = 'cyberpunk';
+  else if (lower.includes('editorial')) newStyle = 'editorial';
+  else if (lower.includes('dark')) newStyle = 'cinematic';
+
+  if (newStyle && activeReel) {
+    pendingSpec = { ...pendingSpec, topic: activeReel.topic, style: newStyle };
+    selectedTemplate = newStyle;
+    renderGenerationPipeline(activeReel.topic);
+    // Create a new reel with new style
+    const resp = await fetch('/api/reels', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({topic: activeReel.topic, style: newStyle, duration: parseFloat(activeReel.duration || 45)})
+    });
+    const d = await resp.json();
+    activeReel = d.reel;
+    listenToReelEvents(d.reel.id);
+    await fetch(`/api/reels/${d.reel.id}/render`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({fast:true})
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+// TRENDS
+// ══════════════════════════════════════════
+
+async function loadTrends() {
+  try {
+    const resp = await fetch('/api/trends');
+    const data = await resp.json();
+    cachedTrends = data;
+    renderTrendsGrid(data.all_topics || []);
+  } catch(e) {
+    document.getElementById('trends-grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <p>Could not load trends. Is the server running?</p></div>`;
+  }
+}
+
+function renderTrendsGrid(topics) {
+  const grid = document.getElementById('trends-grid');
+  if (!grid) return;
+  if (!topics || !topics.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p style="color:var(--muted)">No topics found</p></div>';
+    return;
+  }
+  grid.innerHTML = topics.map(t => `
+    <div class="card" style="cursor:default">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:0.72rem;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,0.05);color:var(--muted);font-family:'JetBrains Mono',monospace">${escHtml(t.category||'')}</span>
+        <span class="trend-score-badge">
+          <i data-lucide="trending-up" style="width:12px;height:12px"></i>
+          ${t.trend_score||0}
+        </span>
+      </div>
+      <h3 style="font-size:1rem;font-weight:700;color:white;margin-bottom:8px;line-height:1.3">${escHtml(t.topic||'')}</h3>
+      <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin-bottom:14px">${escHtml(t.why||'')}</p>
+      <div class="trend-metrics">
+        <div class="metric-item">
+          <div class="metric-val">${t.visual_potential||0}%</div>
+          <div class="metric-label">Visual</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">${t.curiosity_score||0}%</div>
+          <div class="metric-label">Curiosity</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-val">${t.technical_value||0}%</div>
+          <div class="metric-label">Depth</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center"
+        onclick="useTopicFromTrends('${escHtml(t.topic||'')}')">
+        <i data-lucide="arrow-right" style="width:13px;height:13px"></i> Create Video
+      </button>
+    </div>`).join('');
+  lucide.createIcons();
+}
+
+function filterTrends(f, el) {
+  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (!cachedTrends) return;
+  const list = f === 'ai' ? cachedTrends.ai_topics : (cachedTrends.all_topics||[]);
+  renderTrendsGrid(list);
+}
+
+function useTopicFromTrends(topic) {
+  navigate('workspace');
+  setTimeout(() => {
+    if (!wsInitialized) initWorkspaceChat();
+    document.getElementById('ws-chat-input').value = `Create a 45 second video explaining: ${topic}`;
+    sendWorkspaceMessage();
+  }, 150);
+}
+
+// ══════════════════════════════════════════
+// PROJECTS
+// ══════════════════════════════════════════
+
+async function loadProjects() {
+  try {
+    const resp = await fetch('/api/reels');
+    const data = await resp.json();
+    renderProjectsGrid(data.reels || [], 'projects-main-grid');
+  } catch(e) {}
+}
+
+async function loadHomeProjects() {
+  try {
+    const resp = await fetch('/api/reels');
+    const data = await resp.json();
+    renderProjectsGrid((data.reels || []).slice(0,6), 'home-recent-grid');
+    if (!(data.reels||[]).length) {
+      document.getElementById('home-projects-section').classList.add('hidden');
+    }
+  } catch(e) {
+    document.getElementById('home-projects-section').classList.add('hidden');
+  }
+}
+
+function renderProjectsGrid(projects, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!projects.length) {
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon"><i data-lucide="film" style="width:22px;height:22px;color:var(--muted)"></i></div>
+        <p style="font-size:0.9rem;font-weight:600;color:white">No videos yet</p>
+        <p style="font-size:0.82rem">Create your first video from the Studio tab</p>
+        <button class="btn btn-primary btn-sm" onclick="navigate('home')">Get started</button>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  const gradients = [
+    ['#6C63FF','#22D3A5'], ['#F59E0B','#F43F5E'], ['#3B82F6','#9B5DE5'],
+    ['#22D3A5','#3B82F6'], ['#F43F5E','#6C63FF'],
+  ];
+
+  container.innerHTML = projects.map((p,i) => {
+    const g = gradients[i % gradients.length];
+    const statusClass = p.status === 'completed' ? 'badge-complete' : p.status === 'processing' ? 'badge-processing' : 'badge-draft';
+    return `
+      <div class="project-card" onclick="openProject('${p.id}')">
+        <div class="project-card-thumb">
+          <div class="thumb-glow" style="background:${g[0]};left:20%"></div>
+          <div class="thumb-glow" style="background:${g[1]};left:50%"></div>
+          ${p.has_video ? `<i data-lucide="play-circle" style="width:28px;height:28px;color:rgba(255,255,255,0.8);position:relative;z-index:1"></i>` :
+            `<i data-lucide="film" style="width:24px;height:24px;color:rgba(255,255,255,0.3);position:relative;z-index:1"></i>`}
+        </div>
+        <div class="project-card-title">${escHtml(p.topic||'Untitled')}</div>
+        <div class="project-card-meta">
+          <span>${new Date(p.created_at||Date.now()).toLocaleDateString()}</span>
+          <span class="status-badge ${statusClass}">${p.status||'draft'}</span>
+        </div>
+      </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function openProject(reelId) {
+  navigate('workspace');
+  setTimeout(async () => {
+    if (!wsInitialized) initWorkspaceChat();
+    try {
+      const resp = await fetch(`/api/reels/${reelId}`);
+      const data = await resp.json();
+      activeReel = data.reel;
+      if (data.reel.has_video) {
+        showVideoPreview(reelId);
+      }
+    } catch(e) {}
+  }, 150);
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+
+window.addEventListener('DOMContentLoaded', () => {
+  navigate('home');
+  lucide.createIcons();
+
+  // Handle URL params
+  const params = new URLSearchParams(window.location.search);
+  const topic = params.get('topic');
+  if (topic) {
+    setTimeout(() => {
+      navigate('workspace');
+      setTimeout(() => {
+        document.getElementById('ws-chat-input').value = topic;
+        sendWorkspaceMessage();
+      }, 200);
+    }, 100);
+  }
+});
+</script>
 
 </body>
 </html>

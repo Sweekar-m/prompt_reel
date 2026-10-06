@@ -3,6 +3,7 @@ server/routes/reels.py
 ======================
 API endpoints for Reel project management, storyboard curation,
 scene regeneration, deterministic rendering, and video streaming.
+Extended with /voices and /hooks endpoints for chatbot-first UI.
 """
 import os
 import asyncio
@@ -12,9 +13,38 @@ from typing import Dict, Any, List, Optional
 import json
 
 from server.services.reel_service import ReelService, PROJECTS_DIR
+from effects.voice_profiles import list_voice_profiles
+from effects.hooks import HOOK_ARCHETYPES
 
 router = APIRouter(prefix="/api/reels", tags=["reels"])
 service = ReelService()
+
+
+@router.get("/voices")
+async def list_voices():
+    """Lists all available voice profiles for the voice selection UI."""
+    profiles = list_voice_profiles()
+    return {
+        "status": "success",
+        "voices": profiles
+    }
+
+
+@router.post("/hooks")
+async def generate_hooks(payload: Dict[str, Any] = Body(...)):
+    """Generates multiple hook options for a given topic."""
+    topic = payload.get("topic", "")
+    style = payload.get("style", "cyberpunk")
+    if not topic:
+        raise HTTPException(status_code=400, detail="topic is required")
+
+    # Generate AI-powered hooks via nemotron + archetype engine
+    hooks = service.generate_multiple_hooks(topic, style)
+    return {
+        "status": "success",
+        "topic": topic,
+        "hooks": hooks
+    }
 
 
 @router.get("")
@@ -294,3 +324,23 @@ async def stream_render_events(reel_id: str):
                 service.active_listeners[reel_id].remove(queue)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@router.post("/{reel_id}/regenerate-audio")
+async def regenerate_audio(reel_id: str):
+    """Regenerates only the Audio DNA and synchronized soundtrack for a reel."""
+    try:
+        res = service.regenerate_audio(reel_id)
+        return {"status": "success", **res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{reel_id}/regenerate-closing")
+async def regenerate_closing(reel_id: str):
+    """Regenerates only the Closing Strategy and ending scene layout for a reel."""
+    try:
+        res = service.regenerate_closing(reel_id)
+        return {"status": "success", **res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

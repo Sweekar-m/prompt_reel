@@ -9,17 +9,70 @@ import { CodeScene } from "./components/CodeScene";
 import { BenchmarkScene } from "./components/BenchmarkScene";
 import { DiagramScene } from "./components/DiagramScene";
 import { PayoffScene } from "./components/PayoffScene";
+import { ContinuityBridgeLayer } from "./components/ContinuityBridgeLayer";
 
 export const ReelVideo: React.FC<ReelCompositionProps> = ({ motionPlan }) => {
   const { fps } = useVideoConfig();
   const frame = useCurrentFrame();
-  const cd = motionPlan.creative_direction;
-  const scenes = motionPlan.scenes || [];
+  const fallbackPalette = {
+    background: [10, 14, 23] as [number, number, number],
+    primary: [0, 240, 255] as [number, number, number],
+    secondary: [255, 0, 128] as [number, number, number],
+    accent: [255, 230, 0] as [number, number, number],
+    surface: [18, 24, 38] as [number, number, number],
+    text: [240, 245, 255] as [number, number, number],
+  };
+  const cd = motionPlan?.creative_direction || { palette: fallbackPalette };
+  const palette = cd.palette || fallbackPalette;
+  const scenes = motionPlan?.scenes || [];
+  const bridges = motionPlan?.continuity_bridges || [];
 
   const totalFrames = Math.max(1, Math.round((motionPlan.duration || 50) * fps));
-  const cameraScale = interpolate(frame, [0, totalFrames], [1.0, 1.04], {
+
+  // Base slow cinematic drift
+  let cameraScale = interpolate(frame, [0, totalFrames], [1.0, 1.05], {
     extrapolateRight: "clamp",
   });
+  let cameraTranslateX = 0;
+  let cameraTranslateY = 0;
+  let cameraRotate = 0;
+
+  // Dynamic Camera Continuity: Apply impulse across scene boundary bridges
+  for (let i = 0; i < scenes.length - 1; i++) {
+    const nextScene = scenes[i + 1];
+    const boundaryFrame = Math.round(nextScene.start * fps);
+    const bridge =
+      bridges.find(
+        (b) => b.from_scene === scenes[i].id && b.to_scene === nextScene.id
+      ) || bridges[i];
+
+    const overlap = bridge ? bridge.overlap_frames || 14 : 14;
+    const halfOverlap = Math.floor(overlap / 2);
+    const startWindow = boundaryFrame - halfOverlap;
+    const endWindow = boundaryFrame + (overlap - halfOverlap);
+
+    if (frame >= startWindow && frame <= endWindow) {
+      const t = interpolate(frame, [startWindow, endWindow], [0, 1], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      });
+      const bell = Math.sin(t * Math.PI);
+      const camMode = bridge?.camera_continuity || "punch_z";
+
+      if (camMode === "punch_z") {
+        cameraScale += bell * 0.08;
+      } else if (camMode === "whip") {
+        cameraTranslateX += (t - 0.5) * -70;
+        cameraRotate += (t - 0.5) * -1.8;
+      } else if (camMode === "orbit_continue") {
+        cameraRotate += Math.sin((t - 0.5) * Math.PI) * 2.2;
+        cameraScale += bell * 0.04;
+      } else if (camMode === "travel_y") {
+        cameraTranslateY += (t - 0.5) * -50;
+      }
+      break;
+    }
+  }
 
   const renderSceneContent = (scene: SceneSchema) => {
     switch (scene.visual_type) {
@@ -79,7 +132,12 @@ export const ReelVideo: React.FC<ReelCompositionProps> = ({ motionPlan }) => {
   };
 
   return (
-    <AbsoluteFill style={{ transform: `scale(${cameraScale})`, transformOrigin: "center center" }}>
+    <AbsoluteFill
+      style={{
+        transform: `scale(${cameraScale}) translate3d(${cameraTranslateX}px, ${cameraTranslateY}px, 0) rotate(${cameraRotate}deg)`,
+        transformOrigin: "center center",
+      }}
+    >
       {/* Background layer spanning full video */}
       <Background creativeDirection={cd} />
 
@@ -99,6 +157,13 @@ export const ReelVideo: React.FC<ReelCompositionProps> = ({ motionPlan }) => {
           </Sequence>
         );
       })}
+
+      {/* Continuity Bridge Layer: Renders continuous visual carry & motion blur across cuts */}
+      <ContinuityBridgeLayer
+        bridges={bridges}
+        scenes={scenes}
+        palette={palette}
+      />
     </AbsoluteFill>
   );
 };

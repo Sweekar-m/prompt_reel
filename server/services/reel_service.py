@@ -30,6 +30,7 @@ from agents.fact_checker import FactCheckerAgent
 from agents.creative_director import CreativeDirectorAgent
 from agents.script_storyboard_agent import ScriptStoryboardAgent
 from agents.quality_agent import QualityControlAgent
+from agents.continuity_weaver_agent import ContinuityWeaverAgent
 from engine.dna_registry import DNARegistry
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -47,6 +48,7 @@ class ReelService:
         self.creative_director = CreativeDirectorAgent(dna_registry=self.dna_registry)
         self.storyboard_agent = ScriptStoryboardAgent()
         self.quality_agent = QualityControlAgent()
+        self.continuity_weaver = ContinuityWeaverAgent()   # OneTake continuity oracle
         # Active background rendering tasks and listeners
         self.active_listeners: Dict[str, List[asyncio.Queue]] = {}
         self.active_status: Dict[str, Dict[str, Any]] = {}
@@ -169,6 +171,49 @@ class ReelService:
         with open(pfile, "w", encoding="utf-8") as f:
             json.dump(project, f, indent=2)
 
+    def generate_multiple_hooks(self, topic: str, style: str = "cyberpunk") -> list:
+        """Generate multiple diverse hook options for a topic — used by the chatbot-first UI."""
+        from effects.hooks import HOOK_ARCHETYPES, select_best_hook
+        from ai.nemotron_client import NemotronClient
+
+        client = self.creative_director.nemotron
+
+        # Always include the AI-recommended best hook first
+        best = select_best_hook(topic)
+
+        # Pick 4 diverse archetypes (exclude duplicates)
+        all_ids = list(HOOK_ARCHETYPES.keys())
+        selected_ids = [best.id]
+        priority = ["contradiction", "cold_open", "question", "myth", "visual_shock", "code_first", "before_after", "story", "visual_metaphor"]
+        for hid in priority:
+            if hid not in selected_ids and len(selected_ids) < 5:
+                selected_ids.append(hid)
+
+        result = []
+        for hid in selected_ids:
+            arch = HOOK_ARCHETYPES[hid]
+            # Try to get AI-generated headline for this topic/archetype
+            try:
+                ai_hook = client.generate_viral_hook(topic, style=style)
+                headline = ai_hook.get("headline", arch.headline_template)
+                subtext = ai_hook.get("subtext", arch.subtext_template)
+            except Exception:
+                headline = arch.headline_template
+                subtext = arch.subtext_template
+
+            result.append({
+                "id": arch.id,
+                "name": arch.name,
+                "headline": headline,
+                "subtext": subtext,
+                "visual_intent": arch.visual_intent,
+                "audio_intent": arch.audio_intent,
+                "animation_style": arch.animation_style,
+                "is_recommended": hid == best.id,
+            })
+
+        return result
+
     def subscribe_progress(self, reel_id: str) -> asyncio.Queue:
         q = asyncio.Queue()
         if reel_id not in self.active_listeners:
@@ -227,11 +272,13 @@ class ReelService:
             project["explanation"] = expl
             project["metaphor"] = metaphor
 
-            # ── STEP 4: Creative Direction (Video DNA) ───────────────────────
+            # ── STEP 4: Creative Direction (Video DNA & Diversity Engine) ────
             await self.broadcast_progress(reel_id, 4, "Directing visual style, palette & typography...", 42)
             cd = await loop.run_in_executor(
                 None,
-                lambda: self.creative_director.direct_video(topic, requested_style=style_req, duration_sec=dur)
+                lambda: self.creative_director.direct_video(
+                    topic, requested_style=style_req, duration_sec=dur, project_id=reel_id
+                )
             )
 
             # Apply user overrides from AI Director chat if present
@@ -243,6 +290,17 @@ class ReelService:
                 cd["is_math"] = True
                 cd["visual_metaphor"] = "math_3d"
 
+            # Multi-dimensional Creative Repetition Detector
+            vid_dna = cd.get("dna")
+            if vid_dna:
+                is_uniq, max_sim, sim_breakdown = self.dna_registry.is_dna_unique(vid_dna, threshold=0.60)
+                project["creative_similarity"] = {
+                    "is_unique": is_uniq,
+                    "max_similarity": round(max_sim, 3),
+                    "breakdown": {k: round(v, 3) for k, v in sim_breakdown.items()}
+                }
+                print(f"[REEL_SERVICE] Creative uniqueness check: unique={is_uniq}, max_sim={max_sim:.2f}")
+
             project["creative_direction"] = cd
             project["creative_dna"] = cd.get("dna", {})
 
@@ -253,6 +311,70 @@ class ReelService:
                 lambda: self.storyboard_agent.generate_motion_plan(topic, cd, dur)
             )
             project["motion_plan"] = motion_plan
+
+            # ── STEP 5b: Continuity Weaving & Continuity Score ───────────────
+            # The OneTake oracle: every beat must carry, transform, expand, collapse,
+            # travel, or morph into the next beat. Slideshow transitions are rejected.
+            await self.broadcast_progress(
+                reel_id, 5, "Weaving continuity bridges across all scene boundaries...", 60
+            )
+
+            MAX_CONTINUITY_ATTEMPTS = ContinuityWeaverAgent.MAX_REGENERATION_ATTEMPTS
+            continuity_attempt = 0
+            motion_plan = await loop.run_in_executor(
+                None,
+                lambda: self.continuity_weaver.weave_and_score(motion_plan, attempt=continuity_attempt)
+            )
+
+            while (
+                motion_plan.get("needs_continuity_regeneration", False)
+                and continuity_attempt < MAX_CONTINUITY_ATTEMPTS
+            ):
+                continuity_attempt += 1
+                directive = motion_plan.get("continuity_regeneration_directive", "")
+
+                await self.broadcast_progress(
+                    reel_id, 5,
+                    f"Continuity score {motion_plan.get('continuity_score', 0):.0f}/100 — "
+                    f"Repairing slideshow transitions (attempt {continuity_attempt}/{MAX_CONTINUITY_ATTEMPTS})...",
+                    62
+                )
+
+                # Ask the storyboard agent to repair scene types for better carries
+                motion_plan = await loop.run_in_executor(
+                    None,
+                    lambda d=directive, a=continuity_attempt: self.storyboard_agent.regenerate_for_continuity(
+                        motion_plan, d, a
+                    )
+                )
+
+                # Re-weave and re-score
+                motion_plan = await loop.run_in_executor(
+                    None,
+                    lambda a=continuity_attempt: self.continuity_weaver.weave_and_score(
+                        motion_plan, attempt=a
+                    )
+                )
+
+            continuity_score = motion_plan.get("continuity_score", 0.0)
+            continuity_passed = motion_plan.get("continuity_passed", False)
+            project["continuity_score"] = continuity_score
+            project["continuity_passed"] = continuity_passed
+            project["continuity_violations"] = motion_plan.get("continuity_violations", [])
+            project["motion_plan"] = motion_plan
+
+            await self.broadcast_progress(
+                reel_id, 5,
+                f"Continuity verified -- Score: {continuity_score:.0f}/100 "
+                f"({'[PASS]' if continuity_passed else '[PARTIAL]'})",
+                64,
+                payload={
+                    "continuity_score": continuity_score,
+                    "continuity_passed": continuity_passed,
+                    "continuity_bridges": len(motion_plan.get("continuity_bridges", [])),
+                    "carry_chain": self.continuity_weaver.get_carry_summary(motion_plan),
+                }
+            )
 
             # ── STEP 6: Quality Control Pre-flight ───────────────────────────
             await self.broadcast_progress(reel_id, 6, "Running design hierarchy & WCAG contrast audit...", 65)
@@ -293,16 +415,23 @@ class ReelService:
                 voice_name = voice_cfg.get("edge_voice") or voice_cfg.get("voice", "en-US-ChristopherNeural")
                 pitch = voice_cfg.get("pitch", "+0Hz")
 
-            # Dynamic BGM style & progression extraction
-            from effects.sound_profiles import get_music_profile
-            sound_obj = cd.get("sound") if isinstance(cd.get("sound"), dict) else {}
-            bgm_override = project.get("bgm_style") or project.get("custom_sound")
-            raw_style = bgm_override or sound_obj.get("id") or cd.get("sound_profile") or cd.get("dna", {}).get("sound_profile", "cyberpunk")
-            prof = get_music_profile(str(raw_style), is_math=cd.get("is_math", False))
+            # Dynamic Audio DNA & Events extraction
+            audio_dna = cd.get("audio_dna")
+            audio_events = motion_plan.get("audio_events", [])
 
-            sound_style = prof.id
-            bpm = float(sound_obj.get("bpm") or prof.bpm)
-            chord_prog = sound_obj.get("chord_progression") or prof.chord_progression
+            if audio_dna:
+                sound_style = audio_dna.get("genre", "cyberpunk")
+                bpm = float(audio_dna.get("bpm", 124.0))
+                chord_prog = audio_dna.get("chord_progression")
+            else:
+                from effects.sound_profiles import get_music_profile
+                sound_obj = cd.get("sound") if isinstance(cd.get("sound"), dict) else {}
+                bgm_override = project.get("bgm_style") or project.get("custom_sound")
+                raw_style = bgm_override or sound_obj.get("id") or cd.get("sound_profile") or cd.get("dna", {}).get("sound_profile", "cyberpunk")
+                prof = get_music_profile(str(raw_style), is_math=cd.get("is_math", False))
+                sound_style = prof.id
+                bpm = float(sound_obj.get("bpm") or prof.bpm)
+                chord_prog = sound_obj.get("chord_progression") or prof.chord_progression
 
             audio_res = await loop.run_in_executor(
                 None,
@@ -314,7 +443,9 @@ class ReelService:
                     total_duration=dur,
                     style=sound_style,
                     chord_progression=chord_prog,
-                    pitch=pitch
+                    pitch=pitch,
+                    audio_dna=audio_dna,
+                    audio_events=audio_events
                 )
             )
             project["audio_meta"] = {
@@ -460,3 +591,97 @@ class ReelService:
             self.save_project(project)
             await self.broadcast_progress(reel_id, -1, f"Render Error: {str(e)}", 0)
             raise e
+
+    def regenerate_audio(self, reel_id: str) -> Dict[str, Any]:
+        """Regenerates only the Audio DNA and soundtrack for an existing video project."""
+        project = self.get_project(reel_id)
+        if not project or not project.get("creative_direction"):
+            raise ValueError(f"Project {reel_id} does not have creative direction.")
+
+        cd = project["creative_direction"]
+        topic = project["topic"]
+        pdir = os.path.join(PROJECTS_DIR, reel_id)
+        dur = float(project.get("duration", 50.0))
+
+        # Regenerate fresh Audio DNA
+        fresh_audio_dna = self.creative_director.regenerate_audio_dna(topic, cd, salt=f"regen_{time.time()}")
+        cd["audio_dna"] = fresh_audio_dna
+        if "dna" in cd:
+            cd["dna"]["audio_dna"] = fresh_audio_dna
+            cd["dna"]["audio_seed"] = fresh_audio_dna.get("variation_seed")
+
+        # Synthesize fresh audio
+        from audio_pipeline import generate_voiceover_and_soundtrack
+        scenes_cfg = []
+        for sc in project.get("motion_plan", {}).get("scenes", []):
+            scenes_cfg.append({
+                "id": sc["id"],
+                "text": sc.get("narration") or sc.get("voice_text") or "",
+                "start_time": sc["start"],
+                "rate": sc.get("voice_rate", "+15%")
+            })
+
+        voice_name = cd.get("voice", {}).get("voice", "en-US-ChristopherNeural")
+        audio_events = project.get("motion_plan", {}).get("audio_events", [])
+
+        audio_res = generate_voiceover_and_soundtrack(
+            scenes=scenes_cfg,
+            output_dir=pdir,
+            voice=voice_name,
+            bpm=float(fresh_audio_dna.get("bpm", 124.0)),
+            total_duration=dur,
+            style=fresh_audio_dna.get("genre", "cyberpunk"),
+            chord_progression=fresh_audio_dna.get("chord_progression"),
+            audio_dna=fresh_audio_dna,
+            audio_events=audio_events
+        )
+        project["audio_meta"] = {
+            "wav": audio_res.get("wav_path"),
+            "mp3": audio_res.get("mp3_path"),
+            "total_duration": audio_res.get("total_duration")
+        }
+        project["creative_direction"] = cd
+        project["creative_dna"] = cd.get("dna", {})
+        self.save_project(project)
+        return {"reel_id": reel_id, "audio_dna": fresh_audio_dna, "audio_meta": project["audio_meta"]}
+
+    def regenerate_closing(self, reel_id: str) -> Dict[str, Any]:
+        """Regenerates only the Closing Strategy and final scene layout for an existing project."""
+        project = self.get_project(reel_id)
+        if not project or not project.get("creative_direction"):
+            raise ValueError(f"Project {reel_id} does not have creative direction.")
+
+        cd = project["creative_direction"]
+        topic = project["topic"]
+
+        # Regenerate fresh Closing DNA
+        fresh_closing_dna = self.creative_director.regenerate_closing_dna(topic, cd, salt=f"regen_{time.time()}")
+        cd["closing_dna"] = fresh_closing_dna
+        if "dna" in cd:
+            cd["dna"]["closing_dna"] = fresh_closing_dna
+            cd["dna"]["closing_seed"] = fresh_closing_dna.get("variation_seed")
+
+        # Update payoff scene in motion plan
+        motion_plan = project.get("motion_plan", {})
+        for sc in motion_plan.get("scenes", []):
+            if sc.get("visual_type") == "payoff" or "payoff" in sc.get("id", "").lower():
+                elems = sc.get("elements", {})
+                elems["closing_strategy"] = fresh_closing_dna.get("strategy_id")
+                elems["strategy_id"] = fresh_closing_dna.get("strategy_id")
+                elems["strategy_name"] = fresh_closing_dna.get("strategy_name")
+                elems["layout"] = fresh_closing_dna.get("layout")
+                elems["camera_motion"] = fresh_closing_dna.get("camera_motion")
+                elems["typography_style"] = fresh_closing_dna.get("typography_style")
+                elems["visual_accent"] = fresh_closing_dna.get("visual_accent")
+                elems["headline"] = fresh_closing_dna.get("headline")
+                elems["secondary_text"] = fresh_closing_dna.get("secondary_text")
+                elems["stat_callout"] = fresh_closing_dna.get("stat_callout")
+                elems["callback_ref"] = fresh_closing_dna.get("callback_ref")
+                elems["action_label"] = fresh_closing_dna.get("action_label")
+                sc["elements"] = elems
+
+        project["motion_plan"] = motion_plan
+        project["creative_direction"] = cd
+        project["creative_dna"] = cd.get("dna", {})
+        self.save_project(project)
+        return {"reel_id": reel_id, "closing_dna": fresh_closing_dna}

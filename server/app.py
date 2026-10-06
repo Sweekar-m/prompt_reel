@@ -53,16 +53,18 @@ if os.path.exists(WEB_DIR):
 @app.get("/create")
 @app.get("/storyboard")
 @app.get("/projects")
+@app.get("/workspace")
 async def serve_spa():
     """Serves the Single Page Application index for all frontend client routes."""
     index_path = os.path.join(WEB_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
     return {
-        "studio": "REEL STUDIO",
+        "studio": "PROMPT REEL",
         "status": "online",
         "api_docs": "/docs"
     }
+
 
 
 @app.get("/health")

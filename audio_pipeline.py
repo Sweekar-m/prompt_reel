@@ -287,26 +287,52 @@ class ProceduralMusicGenerator:
     - Scene-aware dynamic structural arrangement (Hook -> Setup -> Reveal -> Breakdown -> Climax).
     """
 
+class ProceduralMusicGenerator:
+    """
+    Procedural Music Generator synthesizing diverse, cohesive electronic/hybrid soundtracks.
+    Driven by per-video AudioDNA:
+    - 10 rhythm architectures (four-on-floor, broken beat, half-time, syncopated, triplet, etc.)
+    - Dynamic BPM (80-175 BPM) and modal chord progressions
+    - Multi-instrument synthesis (analog saw, warm Rhodes, glass bells, sub braams, chiptune, 808s)
+    - Dynamic narrative energy curve modulation
+    - Motion-plan audio event synchronization
+    - Deterministic creative seeding
+    """
+
     def __init__(
         self,
         sample_rate: int = SAMPLE_RATE,
         bpm: float = 124.0,
         style: str = "cyberpunk",
-        chord_progression: Optional[List[str]] = None
+        chord_progression: Optional[List[str]] = None,
+        audio_dna: Optional[Dict[str, Any]] = None,
+        audio_events: Optional[List[Dict[str, Any]]] = None
     ):
         self.sr = sample_rate
+        self.audio_dna = audio_dna or {}
+        self.audio_events = audio_events or []
         self.style = (style or "cyberpunk").lower()
 
-        # Resolve style profile from sound profiles library
         from effects.sound_profiles import get_music_profile, MUSIC_PROFILES
         self.profile = get_music_profile(self.style)
 
-        if bpm and bpm > 50 and bpm != 124.0:
+        # 1. BPM resolution: AudioDNA > argument > profile
+        if self.audio_dna.get("bpm"):
+            self.bpm = float(self.audio_dna["bpm"])
+        elif bpm and bpm > 50 and bpm != 124.0:
             self.bpm = bpm
         else:
             self.bpm = self.profile.bpm
 
-        self.beat_sec = 60.0 / self.bpm
+        # 2. Rhythmic & sonic architecture
+        self.rhythm = self.audio_dna.get("rhythm") or "four_on_floor"
+        self.percussion_style = self.audio_dna.get("percussion_style") or "crisp_electro"
+        self.bass_style = self.audio_dna.get("bass_style") or "deep_sub_drone"
+        self.instrument_palette = self.audio_dna.get("instrument_palette") or []
+        self.energy_curve = self.audio_dna.get("energy_curve") or []
+        self.seed = int(self.audio_dna.get("variation_seed", 42))
+
+        self.beat_sec = 60.0 / max(40.0, self.bpm)
         self.step_sec = self.beat_sec / 4.0
 
         # Algorithmic 12-TET note frequencies across all octaves
@@ -339,9 +365,18 @@ class ProceduralMusicGenerator:
             "Abm": {"root": "G#1", "pad": ["G#3", "B3", "D#4"], "arp": ["G#3", "B3", "D#4", "G#4"]},
             "Gb": {"root": "F#1", "pad": ["F#3", "A#3", "C#4"], "arp": ["F#3", "A#3", "C#4", "F#4"]},
             "Ebm": {"root": "D#1", "pad": ["D#3", "F#3", "A#3"], "arp": ["D#4", "F#4", "A#4", "D#5"]},
+            "Bm": {"root": "B1", "pad": ["B3", "D4", "F#4"], "arp": ["B3", "D4", "F#4", "B4"]},
+            "C#m": {"root": "C#2", "pad": ["C#3", "E3", "G#3"], "arp": ["C#4", "E4", "G#4", "C#5"]},
+            "B": {"root": "B1", "pad": ["B2", "D#3", "F#3"], "arp": ["B3", "D#4", "F#4", "B4"]},
+            "F#": {"root": "F#1", "pad": ["F#2", "A#2", "C#3"], "arp": ["F#3", "A#3", "C#4", "F#4"]},
+            "Ab": {"root": "G#1", "pad": ["G#2", "C3", "D#3"], "arp": ["G#3", "C4", "D#4", "G#4"]},
         }
 
-        prog = chord_progression if (chord_progression and len(chord_progression) >= 3) else self.profile.chord_progression
+        # 3. Chord progression resolution: AudioDNA > parameter > profile
+        dna_prog = self.audio_dna.get("chord_progression")
+        prog = dna_prog if (dna_prog and len(dna_prog) >= 3) else (
+            chord_progression if (chord_progression and len(chord_progression) >= 3) else self.profile.chord_progression
+        )
         self.chords = [chord_library.get(ch, chord_library["Am"]) for ch in prog]
 
     def _adsr(self, length: int, a: float, d: float, s: float, r: float) -> np.ndarray:
@@ -411,7 +446,7 @@ class ProceduralMusicGenerator:
     def _synth_sub_braam(self, freq: float, duration: float) -> Tuple[np.ndarray, np.ndarray]:
         n = int(self.sr * duration)
         t = np.linspace(0, duration, n, endpoint=False)
-        f_glide = freq + 12.0 * np.exp(-t / 0.15)
+        f_glide = freq + 14.0 * np.exp(-t / 0.15)
         phase = 2 * np.pi * np.cumsum(f_glide) / self.sr
         sub = np.sin(phase) * 0.75
         saw = signal.sawtooth(phase) * 0.25
@@ -419,6 +454,20 @@ class ProceduralMusicGenerator:
         dist = np.tanh(raw * 2.2) * 0.65
         env = self._adsr(n, a=0.08, d=0.3, s=0.8, r=0.4)
         mono = dist * env
+        return mono * 0.95, mono * 1.05
+
+    def _synth_reese_bass(self, freq: float, duration: float) -> Tuple[np.ndarray, np.ndarray]:
+        """Detuned dual-saw Reese bass with thick chorus modulation."""
+        n = int(self.sr * duration)
+        t = np.linspace(0, duration, n, endpoint=False)
+        detune = 1.006
+        s1 = signal.sawtooth(2 * np.pi * freq * t)
+        s2 = signal.sawtooth(2 * np.pi * (freq * detune) * t)
+        raw = (s1 + s2) * 0.5
+        b, a = signal.butter(2, min(400.0, freq * 5.0) / (self.sr / 2), btype='low')
+        filtered = signal.lfilter(b, a, raw)
+        env = self._adsr(n, a=0.04, d=0.2, s=0.85, r=0.2)
+        mono = np.tanh(filtered * 1.8) * env * 0.65
         return mono * 0.95, mono * 1.05
 
     def _synth_phonk_cowbell(self, pitch_mult: float = 1.0) -> np.ndarray:
@@ -446,7 +495,10 @@ class ProceduralMusicGenerator:
         n = int(self.sr * dur)
         t = np.linspace(0, dur, n, endpoint=False)
         noise = np.random.uniform(-1.0, 1.0, n)
-        b, a = signal.butter(3, [5500 / (self.sr / 2), 16000 / (self.sr / 2)], btype='band')
+        nyquist = self.sr / 2.0
+        high_cut = min(16000.0, nyquist * 0.95)
+        low_cut = min(5500.0, high_cut * 0.5)
+        b, a = signal.butter(3, [low_cut / nyquist, high_cut / nyquist], btype='band')
         filtered = signal.lfilter(b, a, noise)
         env = np.exp(-t / 0.014)
         return (filtered * env * 0.35).astype(np.float32)
@@ -467,8 +519,12 @@ class ProceduralMusicGenerator:
         return click.astype(np.float32)
 
     def generate_music(self, total_seconds: float = TOTAL_DURATION) -> np.ndarray:
-        pid = getattr(self.profile, "id", "cyberpunk")
-        print(f"[MUSIC] Synthesizing {total_seconds:.1f}s dynamic '{pid}' soundtrack (~{self.bpm} BPM)...")
+        pid = self.audio_dna.get("genre") or getattr(self.profile, "id", "cyberpunk")
+        print(f"[MUSIC] Synthesizing {total_seconds:.1f}s soundtrack: Genre='{pid}', Rhythm='{self.rhythm}', BPM={self.bpm:.1f}...")
+
+        # Seed random generator deterministically
+        rng = np.random.RandomState(self.seed % 100000)
+
         total_samples = int(self.sr * total_seconds)
         track_L = np.zeros(total_samples, dtype=np.float32)
         track_R = np.zeros(total_samples, dtype=np.float32)
@@ -482,9 +538,9 @@ class ProceduralMusicGenerator:
         snare = self._synth_snare_or_clap()
         clock_tick = self._synth_clock_tick()
 
-        # Add subtle analog warmth / vinyl crackle bed for Lo-Fi
-        if "lofi" in pid:
-            noise_bed = np.random.uniform(-0.008, 0.008, total_samples).astype(np.float32)
+        # Add subtle tape warmth / analog bed for lofi or documentary
+        if "lofi" in pid or "documentary" in pid or "tape" in self.audio_dna.get("texture", ""):
+            noise_bed = rng.uniform(-0.008, 0.008, total_samples).astype(np.float32)
             track_L += noise_bed
             track_R += noise_bed
 
@@ -498,52 +554,53 @@ class ProceduralMusicGenerator:
             chord_data = self.chords[bar_idx % len(self.chords)]
             root_freq = self.notes.get(chord_data["root"], 55.0)
 
-            # Sectional Arrangement:
-            # 0.0 - 0.10: Hook (Atmospheric tension, no heavy drums)
-            # 0.10 - 0.30: Setup (Groove enters)
-            # 0.30 - 0.70: Core 2D->3D Reveal (Full energy & arps)
-            # 0.70 - 0.85: Deep Breakdown (Focused tension pulse)
-            # 0.85 - 1.00: Climax & Payoff (Maximum crescendo & final hit)
+            # Energy modulation from energy curve
             prog_ratio = bar_idx / max(1, n_bars - 1)
+            time_sec = bar_idx * bar_sec
+            energy_mult = self._get_energy_multiplier(prog_ratio)
+
             is_hook = prog_ratio < 0.10
-            is_setup = 0.10 <= prog_ratio < 0.30
-            is_core = 0.30 <= prog_ratio < 0.70
-            is_breakdown = 0.70 <= prog_ratio < 0.85
-            is_climax = prog_ratio >= 0.85
+            is_breakdown = 0.65 <= prog_ratio < 0.80
+            is_climax = 0.80 <= prog_ratio < 0.95
 
             # ── 1. BASS & SUB-DRONE ──────────────────────────────────────────
             t_bar = np.linspace(0, bar_sec, bar_samples, endpoint=False)
-            if "cinematic" in pid or "dark_math" in pid:
+            if self.bass_style == "braam_horn" or "cinematic" in pid or "dark" in pid:
                 b_l, b_r = self._synth_sub_braam(root_freq, bar_sec)
-                vol = 0.45 if is_hook else (0.65 if is_climax else 0.55)
+                vol = (0.40 if is_hook else (0.65 if is_climax else 0.52)) * energy_mult
+                track_L[bar_start_sample:end_sample] += b_l[:actual_len] * vol
+                track_R[bar_start_sample:end_sample] += b_r[:actual_len] * vol
+            elif self.bass_style == "reese_glide":
+                b_l, b_r = self._synth_reese_bass(root_freq, bar_sec)
+                vol = (0.35 if is_hook else 0.55) * energy_mult
                 track_L[bar_start_sample:end_sample] += b_l[:actual_len] * vol
                 track_R[bar_start_sample:end_sample] += b_r[:actual_len] * vol
             else:
                 sub_drone = np.sin(2 * np.pi * root_freq * t_bar) * 0.40
                 sub_drone += np.sin(2 * np.pi * (root_freq * 2) * t_bar) * 0.10
                 sub_env = self._adsr(bar_samples, a=0.06, d=0.2, s=0.85, r=0.1)
-                sub_drone *= sub_env
+                sub_drone *= sub_env * energy_mult
                 track_L[bar_start_sample:end_sample] += sub_drone[:actual_len] * 0.50
                 track_R[bar_start_sample:end_sample] += sub_drone[:actual_len] * 0.50
 
-            # ── 2. HARMONY & PADS / RHODES ───────────────────────────────────
+            # ── 2. HARMONY & INSTRUMENTS ─────────────────────────────────────
             for p_note in chord_data["pad"]:
                 freq = self.notes.get(p_note, 220.0)
-                if "lofi" in pid:
+                if any(k in self.instrument_palette for k in ("vintage_rhodes", "felt_piano")) or "lofi" in pid:
                     p_l, p_r = self._synth_rhodes_chord(freq, bar_sec)
-                    track_L[bar_start_sample:end_sample] += p_l[:actual_len] * 0.32
-                    track_R[bar_start_sample:end_sample] += p_r[:actual_len] * 0.32
-                elif "dark_math" in pid:
+                    track_L[bar_start_sample:end_sample] += p_l[:actual_len] * (0.32 * energy_mult)
+                    track_R[bar_start_sample:end_sample] += p_r[:actual_len] * (0.32 * energy_mult)
+                elif any(k in self.instrument_palette for k in ("bell_sine", "glass_bell")) or "ambient" in pid:
                     p_l, p_r = self._synth_glass_bell(freq, bar_sec)
-                    track_L[bar_start_sample:end_sample] += p_l[:actual_len] * 0.22
-                    track_R[bar_start_sample:end_sample] += p_r[:actual_len] * 0.22
+                    track_L[bar_start_sample:end_sample] += p_l[:actual_len] * (0.24 * energy_mult)
+                    track_R[bar_start_sample:end_sample] += p_r[:actual_len] * (0.24 * energy_mult)
                 else:
                     p_l, p_r = self._synth_pad_note(freq, bar_sec)
-                    track_L[bar_start_sample:end_sample] += p_l[:actual_len] * 0.26
-                    track_R[bar_start_sample:end_sample] += p_r[:actual_len] * 0.26
+                    track_L[bar_start_sample:end_sample] += p_l[:actual_len] * (0.26 * energy_mult)
+                    track_R[bar_start_sample:end_sample] += p_r[:actual_len] * (0.26 * energy_mult)
 
-            # ── 3. MELODIC ARPEGGIOS & LEADS (Active during Core & Climax) ────
-            if not is_hook:
+            # ── 3. MELODIC ARPS & LEADS ──────────────────────────────────────
+            if not is_hook and not is_breakdown:
                 arp_notes = chord_data["arp"]
                 for step in range(16):
                     step_start_sec = step * self.step_sec
@@ -554,118 +611,215 @@ class ProceduralMusicGenerator:
                     note_idx = [0, 1, 2, 3, 2, 1, 3, 1, 0, 2, 1, 3, 2, 3, 1, 2][step % 16]
                     freq = self.notes.get(arp_notes[note_idx], 440.0)
 
-                    if "phonk" in pid and (step % 2 == 0):
-                        pitch_ratio = [1.0, 1.189, 1.334, 1.498][note_idx % 4]
-                        cb = self._synth_phonk_cowbell(pitch_ratio)
-                        l = min(len(cb), total_samples - step_sample)
-                        track_L[step_sample:step_sample + l] += cb[:l] * 0.32
-                        track_R[step_sample:step_sample + l] += cb[:l] * 0.32
+                    if "phonk" in pid or "trap" in self.rhythm:
+                        if step % 2 == 0:
+                            pitch_ratio = [1.0, 1.189, 1.334, 1.498][note_idx % 4]
+                            cb = self._synth_phonk_cowbell(pitch_ratio)
+                            l = min(len(cb), total_samples - step_sample)
+                            track_L[step_sample:step_sample + l] += cb[:l] * 0.30
+                            track_R[step_sample:step_sample + l] += cb[:l] * 0.30
                     elif "retro" in pid:
                         chip = self._synth_chiptune_pulse(freq, self.step_sec * 1.5, duty=0.25)
                         l = min(len(chip), total_samples - step_sample)
                         pan = 0.3 + 0.4 * math.sin(step)
-                        track_L[step_sample:step_sample + l] += chip[:l] * (1.0 - pan) * 0.30
-                        track_R[step_sample:step_sample + l] += chip[:l] * pan * 0.30
-                    elif "dark_math" in pid:
-                        # Fibonacci / Golden ratio step accents
-                        if step in [0, 1, 2, 3, 5, 8, 13]:
-                            bell_l, bell_r = self._synth_glass_bell(freq * 2.0, self.step_sec * 2.5)
+                        track_L[step_sample:step_sample + l] += chip[:l] * (1.0 - pan) * 0.28
+                        track_R[step_sample:step_sample + l] += chip[:l] * pan * 0.28
+                    elif "glass_bell" in self.instrument_palette:
+                        if step in [0, 2, 4, 7, 9, 11, 14]:
+                            bell_l, bell_r = self._synth_glass_bell(freq * 1.5, self.step_sec * 2.0)
                             l = min(len(bell_l), total_samples - step_sample)
-                            track_L[step_sample:step_sample + l] += bell_l[:l] * 0.18
-                            track_R[step_sample:step_sample + l] += bell_r[:l] * 0.18
+                            track_L[step_sample:step_sample + l] += bell_l[:l] * 0.16
+                            track_R[step_sample:step_sample + l] += bell_r[:l] * 0.16
                     else:
                         arp_audio = self._synth_arp_note(freq, self.step_sec * 1.8)
                         l = min(len(arp_audio), total_samples - step_sample)
                         pan = 0.35 + 0.3 * math.sin(step)
-                        vol = 0.28 if (is_core or is_climax) else 0.15
+                        vol = 0.26 * energy_mult
                         track_L[step_sample:step_sample + l] += arp_audio[:l] * (1.0 - pan) * vol
                         track_R[step_sample:step_sample + l] += arp_audio[:l] * pan * vol
 
-            # ── 4. DYNAMIC DRUM GROOVE ─────────────────────────────────────────
-            # Hook has NO heavy drums (only clock ticks or subtle pulse)
+            # ── 4. RHYTHM ARCHITECTURE DISPATCH ──────────────────────────────
             if is_hook:
+                # Hook: Minimal tension pulse or subtle ticks
                 for step in range(16):
                     step_sample = bar_start_sample + int(step * self.step_sec * self.sr)
                     if step_sample < total_samples:
                         l = min(len(clock_tick), total_samples - step_sample)
-                        track_L[step_sample:step_sample + l] += clock_tick[:l] * 0.25
-                        track_R[step_sample:step_sample + l] += clock_tick[:l] * 0.25
+                        track_L[step_sample:step_sample + l] += clock_tick[:l] * 0.20
+                        track_R[step_sample:step_sample + l] += clock_tick[:l] * 0.20
 
-            elif "cinematic" in pid:
+            elif self.rhythm == "cinematic_hits":
                 # Orchestral downbeat impact on beat 1
                 k_sample = bar_start_sample
                 if k_sample < total_samples:
                     k_l = min(len(kick), total_samples - k_sample)
-                    track_L[k_sample:k_sample + k_l] += kick[:k_l] * 0.65
-                    track_R[k_sample:k_sample + k_l] += kick[:k_l] * 0.65
-                # Tension clockwork on 16ths
+                    track_L[k_sample:k_sample + k_l] += kick[:k_l] * 0.70
+                    track_R[k_sample:k_sample + k_l] += kick[:k_l] * 0.70
                 for step in range(16):
                     s_sample = bar_start_sample + int(step * self.step_sec * self.sr)
                     if s_sample < total_samples:
                         l = min(len(clock_tick), total_samples - s_sample)
-                        track_L[s_sample:s_sample + l] += clock_tick[:l] * 0.20
-                        track_R[s_sample:s_sample + l] += clock_tick[:l] * 0.20
+                        track_L[s_sample:s_sample + l] += clock_tick[:l] * 0.18
+                        track_R[s_sample:s_sample + l] += clock_tick[:l] * 0.18
 
-            elif "lofi" in pid:
-                # Boom-bap swing: Kick on beat 0 and beat 2.5
-                for k_beat in [0.0, 2.5]:
+            elif self.rhythm == "broken_beat":
+                # Syncopated kick on beats 0, 1.5, 2.75
+                for k_beat in [0.0, 1.5, 2.75]:
                     s = bar_start_sample + int(k_beat * self.beat_sec * self.sr)
                     if s < total_samples:
                         l = min(len(kick), total_samples - s)
                         track_L[s:s + l] += kick[:l] * 0.45
                         track_R[s:s + l] += kick[:l] * 0.45
-                # Snare on beats 1 and 3 (micro-swung by +15ms)
+                # Snare on 1.0 and 3.0 (with slight swung micro-timing)
                 for sn_beat in [1.0, 3.0]:
-                    s = bar_start_sample + int((sn_beat * self.beat_sec + 0.015) * self.sr)
+                    s = bar_start_sample + int((sn_beat * self.beat_sec + 0.012) * self.sr)
                     if s < total_samples:
                         l = min(len(snare), total_samples - s)
                         track_L[s:s + l] += snare[:l] * 0.35
                         track_R[s:s + l] += snare[:l] * 0.35
-                # Soft 8th note hats
+                # Shuffled 8th hats
                 for h_step in range(8):
                     s = bar_start_sample + int(h_step * self.beat_sec * 0.5 * self.sr)
                     if s < total_samples:
                         l = min(len(hihat), total_samples - s)
-                        track_L[s:s + l] += hihat[:l] * 0.20
-                        track_R[s:s + l] += hihat[:l] * 0.20
+                        track_L[s:s + l] += hihat[:l] * 0.22
+                        track_R[s:s + l] += hihat[:l] * 0.22
 
-            elif "phonk" in pid:
-                # Trap rhythm: Kick on 0 and 2.5 | Clap on beat 2 | Triplet hats
-                for k_beat in [0.0, 2.5]:
+            elif self.rhythm == "half_time":
+                # Kick on beat 0, huge snare on beat 2.0
+                s = bar_start_sample
+                if s < total_samples:
+                    l = min(len(kick), total_samples - s)
+                    track_L[s:s + l] += kick[:l] * 0.60
+                    track_R[s:s + l] += kick[:l] * 0.60
+                sn_s = bar_start_sample + int(2.0 * self.beat_sec * self.sr)
+                if sn_s < total_samples:
+                    l = min(len(snare), total_samples - sn_s)
+                    track_L[sn_s:sn_s + l] += snare[:l] * 0.50
+                    track_R[sn_s:sn_s + l] += snare[:l] * 0.50
+                # Quarter-note hats
+                for b in range(4):
+                    hs = bar_start_sample + int(b * self.beat_sec * self.sr)
+                    if hs < total_samples:
+                        l = min(len(hihat), total_samples - hs)
+                        track_L[hs:hs + l] += hihat[:l] * 0.25
+                        track_R[hs:hs + l] += hihat[:l] * 0.25
+
+            elif self.rhythm == "syncopated":
+                # Latin / afro-futurist syncopation: Kick on 0, 1.25, 2.5
+                for k_beat in [0.0, 1.25, 2.5]:
+                    s = bar_start_sample + int(k_beat * self.beat_sec * self.sr)
+                    if s < total_samples:
+                        l = min(len(kick), total_samples - s)
+                        track_L[s:s + l] += kick[:l] * 0.50
+                        track_R[s:s + l] += kick[:l] * 0.50
+                # Snare on 1.75 and 3.0
+                for sn_beat in [1.75, 3.0]:
+                    s = bar_start_sample + int(sn_beat * self.beat_sec * self.sr)
+                    if s < total_samples:
+                        l = min(len(snare), total_samples - s)
+                        track_L[s:s + l] += snare[:l] * 0.35
+                        track_R[s:s + l] += snare[:l] * 0.35
+
+            elif self.rhythm == "triplet":
+                # Drill / Trap rhythm: Kick on 0, 2.25 | Snare on 2.0 | Triplet hats
+                for k_beat in [0.0, 2.25]:
                     s = bar_start_sample + int(k_beat * self.beat_sec * self.sr)
                     if s < total_samples:
                         l = min(len(kick), total_samples - s)
                         track_L[s:s + l] += kick[:l] * 0.55
                         track_R[s:s + l] += kick[:l] * 0.55
-                for sn_beat in [2.0]:
-                    s = bar_start_sample + int(sn_beat * self.beat_sec * self.sr)
-                    if s < total_samples:
-                        l = min(len(snare), total_samples - s)
-                        track_L[s:s + l] += snare[:l] * 0.45
-                        track_R[s:s + l] += snare[:l] * 0.45
-                for h_step in range(16):
-                    s = bar_start_sample + int(h_step * self.step_sec * self.sr)
+                sn_s = bar_start_sample + int(2.0 * self.beat_sec * self.sr)
+                if sn_s < total_samples:
+                    l = min(len(snare), total_samples - sn_s)
+                    track_L[sn_s:sn_s + l] += snare[:l] * 0.45
+                    track_R[sn_s:sn_s + l] += snare[:l] * 0.45
+                # 12-step triplet hi-hats
+                trip_step = bar_sec / 12.0
+                for step in range(12):
+                    s = bar_start_sample + int(step * trip_step * self.sr)
                     if s < total_samples:
                         l = min(len(hihat), total_samples - s)
                         track_L[s:s + l] += hihat[:l] * 0.28
                         track_R[s:s + l] += hihat[:l] * 0.28
 
-            else:
-                # Standard Driving Electro (Cyberpunk / Tech)
+            elif self.rhythm == "sparse_pulse":
+                # Gentle downbeat pulse only
+                s = bar_start_sample
+                if s < total_samples:
+                    l = min(len(kick), total_samples - s)
+                    track_L[s:s + l] += kick[:l] * 0.38
+                    track_R[s:s + l] += kick[:l] * 0.38
+                for step in [4, 8, 12]:
+                    s = bar_start_sample + int(step * self.step_sec * self.sr)
+                    if s < total_samples:
+                        l = min(len(clock_tick), total_samples - s)
+                        track_L[s:s + l] += clock_tick[:l] * 0.22
+                        track_R[s:s + l] += clock_tick[:l] * 0.22
+
+            elif self.rhythm == "rolling":
+                # Continuous driving rolling percussion
                 for beat in range(4):
                     s = bar_start_sample + int(beat * self.beat_sec * self.sr)
                     if s < total_samples:
                         l = min(len(kick), total_samples - s)
                         track_L[s:s + l] += kick[:l] * 0.45
                         track_R[s:s + l] += kick[:l] * 0.45
-                    # Snare on 2 and 4 (beats 1 and 3, 0-indexed)
+                for step in range(16):
+                    s = bar_start_sample + int(step * self.step_sec * self.sr)
+                    if s < total_samples:
+                        vel = 0.15 + 0.15 * math.sin(step * 0.8)
+                        l = min(len(hihat), total_samples - s)
+                        track_L[s:s + l] += hihat[:l] * vel
+                        track_R[s:s + l] += hihat[:l] * vel
+
+            elif self.rhythm == "evolving":
+                # Pacing evolves dynamically across sections
+                if prog_ratio < 0.25:
+                    # Sparse
+                    s = bar_start_sample
+                    if s < total_samples:
+                        l = min(len(kick), total_samples - s)
+                        track_L[s:s + l] += kick[:l] * 0.40
+                        track_R[s:s + l] += kick[:l] * 0.40
+                elif prog_ratio < 0.70:
+                    # Half-time groove
+                    s = bar_start_sample
+                    if s < total_samples:
+                        l = min(len(kick), total_samples - s)
+                        track_L[s:s + l] += kick[:l] * 0.48
+                        track_R[s:s + l] += kick[:l] * 0.48
+                    sn_s = bar_start_sample + int(2.0 * self.beat_sec * self.sr)
+                    if sn_s < total_samples:
+                        l = min(len(snare), total_samples - sn_s)
+                        track_L[sn_s:sn_s + l] += snare[:l] * 0.40
+                        track_R[sn_s:sn_s + l] += snare[:l] * 0.40
+                else:
+                    # Full driving electro
+                    for beat in range(4):
+                        s = bar_start_sample + int(beat * self.beat_sec * self.sr)
+                        if s < total_samples:
+                            l = min(len(kick), total_samples - s)
+                            track_L[s:s + l] += kick[:l] * 0.50
+                            track_R[s:s + l] += kick[:l] * 0.50
+                        if beat in [1, 3]:
+                            l = min(len(snare), total_samples - s)
+                            track_L[s:s + l] += snare[:l] * 0.38
+                            track_R[s:s + l] += snare[:l] * 0.38
+
+            else:
+                # Standard Driving Electro (four_on_floor)
+                for beat in range(4):
+                    s = bar_start_sample + int(beat * self.beat_sec * self.sr)
+                    if s < total_samples:
+                        l = min(len(kick), total_samples - s)
+                        track_L[s:s + l] += kick[:l] * 0.45
+                        track_R[s:s + l] += kick[:l] * 0.45
                     if beat in [1, 3] and not is_breakdown:
                         if s < total_samples:
                             l = min(len(snare), total_samples - s)
                             track_L[s:s + l] += snare[:l] * 0.35
                             track_R[s:s + l] += snare[:l] * 0.35
-
-                # 16th-note offbeat hi-hat
                 for step in range(16):
                     if step % 2 == 1:
                         s = bar_start_sample + int(step * self.step_sec * self.sr)
@@ -674,6 +828,24 @@ class ProceduralMusicGenerator:
                             track_L[s:s + l] += hihat[:l] * 0.25
                             track_R[s:s + l] += hihat[:l] * 0.25
 
+        # ── 5. AUDIO EVENT SFX INJECTIONS ────────────────────────────────────
+        from effects.sound_profiles import generate_semantic_sfx
+        for ev in self.audio_events:
+            ev_time = float(ev.get("time", 0.0))
+            ev_type = ev.get("type", "impact")
+            ev_sample = int(ev_time * self.sr)
+            if ev_sample < total_samples:
+                if ev_type in ("impact", "resolution"):
+                    sfx = generate_semantic_sfx("sub_impact", self.sr)
+                    l = min(len(sfx), total_samples - ev_sample)
+                    track_L[ev_sample:ev_sample + l] += sfx[:l] * 0.45
+                    track_R[ev_sample:ev_sample + l] += sfx[:l] * 0.45
+                elif ev_type in ("reveal", "build"):
+                    sfx = generate_semantic_sfx("tonal_rise", self.sr)
+                    l = min(len(sfx), total_samples - ev_sample)
+                    track_L[ev_sample:ev_sample + l] += sfx[:l] * 0.35
+                    track_R[ev_sample:ev_sample + l] += sfx[:l] * 0.35
+
         # Normalization
         peak = max(np.max(np.abs(track_L)), np.max(np.abs(track_R)))
         if peak > 0:
@@ -681,6 +853,21 @@ class ProceduralMusicGenerator:
             track_R = track_R / peak * 0.55
 
         return np.stack([track_L, track_R], axis=-1)
+
+    def _get_energy_multiplier(self, ratio: float) -> float:
+        """Interpolates energy multiplier from the energy curve."""
+        if not self.energy_curve:
+            return 1.0
+        # Find segment in energy curve
+        for i in range(len(self.energy_curve) - 1):
+            r1 = self.energy_curve[i].get("time_ratio", 0.0)
+            r2 = self.energy_curve[i + 1].get("time_ratio", 1.0)
+            if r1 <= ratio <= r2:
+                e1 = self.energy_curve[i].get("energy", 0.5)
+                e2 = self.energy_curve[i + 1].get("energy", 0.5)
+                t = (ratio - r1) / max(0.001, (r2 - r1))
+                return float(e1 + t * (e2 - e1))
+        return float(self.energy_curve[-1].get("energy", 0.5))
 
 
 # ── 4. Master Audio Mixer with Ducking & Limiting ────────────────────────────
@@ -726,7 +913,9 @@ def build_master_audio(
     output_dir: str = OUTPUT_DIR,
     bpm: float = 124.0,
     style: str = "cyberpunk",
-    chord_progression: Optional[List[str]] = None
+    chord_progression: Optional[List[str]] = None,
+    audio_dna: Optional[Dict[str, Any]] = None,
+    audio_events: Optional[List[Dict[str, Any]]] = None
 ) -> Tuple[str, str]:
     """
     Combines voiceover, background music, and SFX into a balanced master mix.
@@ -735,6 +924,11 @@ def build_master_audio(
     - Normalizes master to -1.0 dBFS with soft limiting.
     - Exports to WAV and MP3.
     """
+    if audio_dna:
+        bpm = float(audio_dna.get("bpm", bpm))
+        style = str(audio_dna.get("genre", style))
+        chord_progression = audio_dna.get("chord_progression", chord_progression)
+
     print(f"\n[MIXER] Assembling master synchronized soundtrack (Style: {style}, BPM: {bpm})...")
     total_samples = int(SAMPLE_RATE * total_duration)
 
@@ -755,12 +949,14 @@ def build_master_audio(
             m_end = min(total_samples, start_samp + clip_len + pad_s)
             voice_active_mask[m_start:m_end] = True
 
-    # 2. Procedural Music Track (Dynamically styled & chord-progressed)
+    # 2. Procedural Music Track (Dynamically styled & chord-progressed via AudioDNA)
     music_gen = ProceduralMusicGenerator(
         sample_rate=SAMPLE_RATE,
         bpm=bpm,
         style=style,
-        chord_progression=chord_progression
+        chord_progression=chord_progression,
+        audio_dna=audio_dna,
+        audio_events=audio_events
     )
     raw_music = music_gen.generate_music(total_seconds=total_duration)
 
@@ -858,7 +1054,9 @@ def generate_voiceover_and_soundtrack(
     total_duration: float = 50.0,
     style: str = "cyberpunk",
     chord_progression: Optional[List[str]] = None,
-    pitch: str = "+0Hz"
+    pitch: str = "+0Hz",
+    audio_dna: Optional[Dict[str, Any]] = None,
+    audio_events: Optional[List[Dict[str, Any]]] = None
 ) -> Dict[str, Any]:
     """
     Standard studio interface: Generates neural voiceover, procedural music,
@@ -887,7 +1085,9 @@ def generate_voiceover_and_soundtrack(
         output_dir=output_dir,
         bpm=bpm,
         style=style,
-        chord_progression=chord_progression
+        chord_progression=chord_progression,
+        audio_dna=audio_dna,
+        audio_events=audio_events
     )
 
     return {

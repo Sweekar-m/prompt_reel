@@ -25,6 +25,48 @@ export interface TypographySchema {
   mono?: string;
 }
 
+export interface AudioEventSchema {
+  time: number;
+  type: string;
+  source_scene?: string;
+  weight?: number;
+}
+
+export interface AudioDNASchema {
+  genre: string;
+  mood: string;
+  energy: string;
+  bpm: number;
+  rhythm: string;
+  percussion_style?: string;
+  bass_style?: string;
+  harmonic_style?: string;
+  chord_progression: string[];
+  instrument_palette?: string[];
+  texture?: string;
+  intro_style?: string;
+  build_style?: string;
+  drop_style?: string;
+  outro_style?: string;
+  variation_seed?: number;
+}
+
+export interface ClosingDNASchema {
+  strategy_id: string;
+  strategy_name?: string;
+  description?: string;
+  layout?: string;
+  camera_motion?: string;
+  typography_style?: string;
+  visual_accent?: string;
+  headline?: string;
+  secondary_text?: string;
+  stat_callout?: string;
+  callback_ref?: string;
+  action_label?: string;
+  variation_seed?: number;
+}
+
 export interface CreativeDirectionSchema {
   style_id?: string;
   palette: PaletteSchema;
@@ -32,6 +74,8 @@ export interface CreativeDirectionSchema {
   hook?: {
     headline_template?: string;
     subtext_template?: string;
+    headline?: string;
+    subtext?: string;
   };
   visual_metaphor?: string;
   sound_profile?: {
@@ -41,6 +85,11 @@ export interface CreativeDirectionSchema {
     voice?: string;
     rate?: string;
   };
+  audio_dna?: AudioDNASchema;
+  closing_dna?: ClosingDNASchema;
+  creative_seed?: string;
+  audio_seed?: number;
+  closing_seed?: number;
 }
 
 export interface SceneElements {
@@ -72,6 +121,88 @@ export interface SceneElements {
   [key: string]: unknown;
 }
 
+// ── Continuity System Types (OneTake Principle) ───────────────────────────────
+
+/** The carry instruction for a scene's exit into or entry from an adjacent beat */
+export interface CarryInstruction {
+  primitive: string;          // "expand" | "morph" | "travel" | "collapse" | "whip_pan" | ...
+  carrier: string;            // The specific element that carries (e.g. "headline_text")
+  to_scene?: string;
+  from_scene?: string;
+  overlap_frames: number;     // Frames the carry spans across both scenes
+  motion_blur: number;        // 0.0–1.0 blur intensity at peak of carry
+  easing: string;             // Easing token e.g. "cubic_out", "expo_inout"
+  entry_scale?: number;       // Scale factor at which the element enters
+  exit_scale?: number;        // Scale factor at which the element exits
+  repaired?: boolean;         // True if this bridge was patched by auto-repair
+}
+
+/** A ContinuityBridge connecting two adjacent scenes */
+export interface ContinuityBridgeSchema {
+  from_scene: string;
+  to_scene: string;
+  from_type: string;
+  to_type: string;
+  carry_primitive: string;
+  carrier_element: string;
+  carrier_description: string;
+  exit_position?: { x: number; y: number };
+  entry_position?: { x: number; y: number };
+  exit_scale: number;
+  entry_scale: number;
+  overlap_frames: number;
+  motion_blur_intensity: number;
+  camera_continuity: string;  // "maintain" | "orbit_continue" | "whip" | "punch_z"
+  easing: string;
+  continuity_score_contribution: number;
+  is_slideshow: boolean;
+}
+
+/** Per-bridge score returned by the oracle */
+export interface BridgeScoreResult {
+  bridge: ContinuityBridgeSchema;
+  score: number;              // 0–100
+  is_slideshow: boolean;
+  passed: boolean;
+}
+
+/** The full continuity report from the ContinuityScorer oracle */
+export interface ContinuityReportSchema {
+  continuity_score: number;   // 0–100 overall score
+  passed: boolean;
+  slideshow_ratio: number;    // 0.0–1.0 fraction of bridges that are plain slideshows
+  slideshow_bridge_count: number;
+  total_bridges: number;
+  bridge_scores: BridgeScoreResult[];
+  violations: Array<{
+    from: string;
+    to: string;
+    score: number;
+    issue: string;
+    recommendation: string;
+  }>;
+  recommendation: string;
+  thresholds?: {
+    minimum_bridge_score: number;
+    minimum_overall_score: number;
+    maximum_slideshow_ratio: number;
+  };
+}
+
+/** The per-scene continuity intent annotations from ScriptStoryboardAgent */
+export interface ContinuityIntentSchema {
+  exit_element: string;
+  exit_primitive: string;
+  exit_description: string;
+  entry_element: string;
+  entry_primitive: string;
+  entry_description: string;
+  is_first_scene: boolean;
+  is_last_scene: boolean;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface SceneSchema {
   id: string;
   beat_name?: string;
@@ -81,6 +212,10 @@ export interface SceneSchema {
   visual_type: "hook" | "math_3d" | "metaphor" | "code" | "benchmark" | "split" | "diagram" | "payoff" | string;
   voice_text?: string;
   elements: SceneElements;
+  // Continuity carry annotations (added by ContinuityWeaverAgent)
+  continuity_intent?: ContinuityIntentSchema;
+  exit_carry?: CarryInstruction;
+  entry_carry?: CarryInstruction;
 }
 
 export interface MotionPlanSchema {
@@ -94,6 +229,16 @@ export interface MotionPlanSchema {
   code_assets?: Record<string, unknown>;
   scenes: SceneSchema[];
   audio_url?: string;
+  audio_events?: AudioEventSchema[];
+  is_math?: boolean;
+  math_spec?: Record<string, unknown>;
+  // Continuity system (populated by ContinuityWeaverAgent oracle)
+  continuity_bridges?: ContinuityBridgeSchema[];
+  continuity_report?: ContinuityReportSchema;
+  continuity_score?: number;
+  continuity_passed?: boolean;
+  continuity_violations?: string[];
+  continuity_attempt?: number;
 }
 
 export interface ReelCompositionProps {
