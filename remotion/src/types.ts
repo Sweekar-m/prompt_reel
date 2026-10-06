@@ -90,6 +90,8 @@ export interface CreativeDirectionSchema {
   creative_seed?: string;
   audio_seed?: number;
   closing_seed?: number;
+  motion_template?: Record<string, any>;
+  motion_template_id?: string;
 }
 
 export interface SceneElements {
@@ -201,6 +203,88 @@ export interface ContinuityIntentSchema {
   is_last_scene: boolean;
 }
 
+// ── Visual Recipe & Shot Designer Schemas ────────────────────────────────────
+
+export interface CameraWaypointSchema {
+  x: number;
+  y: number;
+  z: number;
+  pitch: number;
+  yaw: number;
+  roll: number;
+  fov?: number;
+  scale?: number;
+}
+
+export interface CameraTrajectorySchema {
+  start: CameraWaypointSchema;
+  end: CameraWaypointSchema;
+  motion_style: string;
+  motion_blur?: number;
+  easing?: string;
+}
+
+export interface VisualPrimitivesSchema {
+  enter: string;
+  move: string;
+  transform: string;
+  impact: string;
+  exit: string;
+}
+
+export interface TypographyBehaviorSchema {
+  mode: string;
+  headline: string;
+  subtext: string;
+  badge: string;
+  font_size?: number;
+  letter_spacing?: string;
+  case?: string;
+  stagger_frames?: number;
+  highlight_word_indices?: number[];
+}
+
+export interface SubjectLayerSchema {
+  type: string;
+  layer_id: string;
+  z_index?: number;
+  depth_plane?: string;
+  properties?: Record<string, any>;
+}
+
+export interface CarryRelationshipSchema {
+  carrier_element_id: string;
+  entry_primitive: string;
+  exit_primitive: string;
+  morph_target: string;
+  surviving_properties?: string[];
+}
+
+export interface VisualRecipeSchema {
+  scene_id: string;
+  beat_name: string;
+  start_time: number;
+  end_time: number;
+  duration_sec: number;
+  template_id: string;
+  composition: string;
+  anchor: {
+    x_pct: number;
+    y_pct: number;
+    align: string;
+  };
+  layout_grammar: Record<string, any>;
+  camera: CameraTrajectorySchema;
+  primitives: VisualPrimitivesSchema;
+  typography: TypographyBehaviorSchema;
+  primary_subject: SubjectLayerSchema;
+  secondary_subjects?: SubjectLayerSchema[];
+  background_style: string;
+  lighting_depth: string;
+  pacing_style: string;
+  carry?: CarryRelationshipSchema;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SceneSchema {
@@ -212,6 +296,8 @@ export interface SceneSchema {
   visual_type: "hook" | "math_3d" | "metaphor" | "code" | "benchmark" | "split" | "diagram" | "payoff" | string;
   voice_text?: string;
   elements: SceneElements;
+  // Dynamic Shot Designer Visual Recipe (Universal Visual Engine)
+  visual_recipe?: VisualRecipeSchema;
   // Continuity carry annotations (added by ContinuityWeaverAgent)
   continuity_intent?: ContinuityIntentSchema;
   exit_carry?: CarryInstruction;

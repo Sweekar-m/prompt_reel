@@ -30,6 +30,18 @@ async def list_voices():
     }
 
 
+@router.get("/motion-templates")
+async def list_motion_templates_route():
+    """Lists all 10 specialized motion-graphics template systems with grammars."""
+    from effects.motion_templates import list_motion_templates
+    templates = [t.to_dict() for t in list_motion_templates()]
+    return {
+        "status": "success",
+        "count": len(templates),
+        "templates": templates
+    }
+
+
 @router.post("/hooks")
 async def generate_hooks(payload: Dict[str, Any] = Body(...)):
     """Generates multiple hook options for a given topic."""

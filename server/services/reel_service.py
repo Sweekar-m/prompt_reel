@@ -31,6 +31,8 @@ from agents.creative_director import CreativeDirectorAgent
 from agents.script_storyboard_agent import ScriptStoryboardAgent
 from agents.quality_agent import QualityControlAgent
 from agents.continuity_weaver_agent import ContinuityWeaverAgent
+from agents.shot_designer_agent import ShotDesignerAgent
+from effects.motion_templates import list_motion_templates, get_motion_template
 from engine.dna_registry import DNARegistry
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -47,6 +49,7 @@ class ReelService:
         self.dna_registry = DNARegistry(os.path.join(BASE_DIR, "dna_history.json"))
         self.creative_director = CreativeDirectorAgent(dna_registry=self.dna_registry)
         self.storyboard_agent = ScriptStoryboardAgent()
+        self.shot_designer = ShotDesignerAgent()
         self.quality_agent = QualityControlAgent()
         self.continuity_weaver = ContinuityWeaverAgent()   # OneTake continuity oracle
         # Active background rendering tasks and listeners
@@ -310,9 +313,17 @@ class ReelService:
                 None,
                 lambda: self.storyboard_agent.generate_motion_plan(topic, cd, dur)
             )
+
+            # ── STEP 5b: Shot Designer (Generating Rich Visual Recipes) ─────────
+            await self.broadcast_progress(reel_id, 5, "Designing dynamic shot visual recipes & camera choreography...", 58)
+            template_req = project.get("motion_template") or project.get("visual_style")
+            motion_plan = await loop.run_in_executor(
+                None,
+                lambda: self.shot_designer.design_shots_for_motion_plan(motion_plan, requested_template_id=template_req)
+            )
             project["motion_plan"] = motion_plan
 
-            # ── STEP 5b: Continuity Weaving & Continuity Score ───────────────
+            # ── STEP 5c: Continuity Weaving & Continuity Score ───────────────
             # The OneTake oracle: every beat must carry, transform, expand, collapse,
             # travel, or morph into the next beat. Slideshow transitions are rejected.
             await self.broadcast_progress(

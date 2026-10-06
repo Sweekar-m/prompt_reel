@@ -19,6 +19,7 @@ import numpy as np
 # Add project root to sys.path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from ai.nemotron_client import NemotronClient
 from agents.creative_director import CreativeDirectorAgent
 from agents.script_storyboard_agent import ScriptStoryboardAgent
 from engine.dna_registry import DNARegistry
@@ -33,8 +34,9 @@ class TestCreativeDiversity(unittest.TestCase):
         # Clear test history
         if os.path.exists("test_dna_history.json"):
             os.remove("test_dna_history.json")
-        self.cd_agent = CreativeDirectorAgent(dna_registry=self.dna_registry)
-        self.storyboard_agent = ScriptStoryboardAgent()
+        offline_nemo = NemotronClient(api_key="")
+        self.cd_agent = CreativeDirectorAgent(nemotron_client=offline_nemo, dna_registry=self.dna_registry)
+        self.storyboard_agent = ScriptStoryboardAgent(nemotron_client=offline_nemo)
 
     def tearDown(self):
         if os.path.exists("test_dna_history.json"):

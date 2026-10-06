@@ -438,167 +438,210 @@
     }
     .template-card.selected .template-check { opacity: 1; }
 
-    /* ── Template Preview Animations ── */
-    /* Cyberpunk */
-    .tp-cyberpunk { background: #0A0C12; }
-    .tp-cyberpunk .tp-grid {
-      position: absolute; inset: 0; opacity: 0.25;
-      background: linear-gradient(rgba(0,240,255,0.6) 1px, transparent 1px),
-                  linear-gradient(90deg, rgba(0,240,255,0.6) 1px, transparent 1px);
-      background-size: 20px 20px;
-      animation: gridScroll 3s linear infinite;
+    /* ── Template Preview Animations: 10 Motion Systems ── */
+    /* 1. Kinetic Editorial */
+    .tp-kinetic-editorial { background: #0E0D12; position: relative; overflow: hidden; }
+    .tp-kinetic-editorial .ke-bar {
+      position: absolute; top: 18px; left: 16px; width: 4px; height: 75px;
+      background: #FF5722; animation: kePulse 2.5s infinite ease-in-out;
     }
-    .tp-cyberpunk .tp-text {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
-      color: #00F0FF; text-shadow: 0 0 10px #00F0FF;
-      animation: flicker 4s infinite;
-      white-space: nowrap;
+    .tp-kinetic-editorial .ke-title {
+      position: absolute; top: 20px; left: 28px;
+      font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 900;
+      color: #FFF; line-height: 1.15; letter-spacing: -0.03em;
     }
-    .tp-cyberpunk .tp-bar {
-      position: absolute; bottom: 14px; left: 14px; right: 14px;
-      height: 2px; background: rgba(0,240,255,0.2); border-radius: 2px; overflow: hidden;
+    .tp-kinetic-editorial .ke-word1 { display: block; animation: keSlide1 3s infinite cubic-bezier(0.16,1,0.3,1); }
+    .tp-kinetic-editorial .ke-word2 { display: block; color: #FF5722; animation: keSlide2 3s infinite cubic-bezier(0.16,1,0.3,1); }
+    .tp-kinetic-editorial .ke-sub {
+      position: absolute; bottom: 12px; left: 28px;
+      font-family: 'JetBrains Mono', monospace; font-size: 7px; color: #8E8A99; letter-spacing: 0.1em;
     }
-    .tp-cyberpunk .tp-bar::after {
-      content: ''; position: absolute; left: -40%; width: 40%; height: 100%;
-      background: linear-gradient(90deg, transparent, #00F0FF, transparent);
-      animation: scanBar 2s linear infinite;
-    }
-    @keyframes gridScroll { to { background-position: 0 20px, 20px 0; } }
-    @keyframes flicker { 0%,95%,100%{opacity:1}96%,98%{opacity:0.3} }
-    @keyframes scanBar { to { left: 140%; } }
+    @keyframes kePulse { 0%,100%{transform:scaleY(0.7);opacity:0.7} 50%{transform:scaleY(1.0);opacity:1} }
+    @keyframes keSlide1 { 0%,10%{transform:translateX(-12px);opacity:0} 20%,85%{transform:translateX(0);opacity:1} 95%,100%{transform:translateX(10px);opacity:0} }
+    @keyframes keSlide2 { 0%,20%{transform:translateX(-16px);opacity:0} 30%,85%{transform:translateX(0);opacity:1} 95%,100%{transform:translateX(10px);opacity:0} }
 
-    /* Cinematic */
-    .tp-cinematic { background: #0E0E10; }
-    .tp-cinematic .tp-glow {
-      position: absolute; top: 30%; left: 50%; transform: translate(-50%,-50%);
-      width: 80px; height: 80px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(235,205,145,0.35) 0%, transparent 70%);
-      animation: breathe 3s ease-in-out infinite;
+    /* 2. Dynamic Product UI */
+    .tp-dynamic-product-ui { background: #0A0D14; position: relative; overflow: hidden; }
+    .tp-dynamic-product-ui .ui-card {
+      position: absolute; top: 14px; left: 14px; right: 14px; height: 64px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; backdrop-filter: blur(8px);
+      animation: uiFloat 3s infinite ease-in-out;
     }
-    .tp-cinematic .tp-text {
-      position: absolute; top: 55%; left: 50%; transform: translate(-50%,-50%);
-      font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 800;
-      color: #EBCD91; letter-spacing: 0.15em; text-transform: uppercase;
-      white-space: nowrap;
+    .tp-dynamic-product-ui .ui-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.07);
     }
-    .tp-cinematic .tp-line {
-      position: absolute; top: 68%; left: 20%; right: 20%; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(235,205,145,0.6), transparent);
-      animation: expandLine 2s ease-out infinite;
+    .tp-dynamic-product-ui .ui-dots { display: flex; gap: 4px; }
+    .tp-dynamic-product-ui .ui-dot { width: 5px; height: 5px; border-radius: 50%; background: #3B82F6; }
+    .tp-dynamic-product-ui .ui-bar-wrap { padding: 10px 10px; }
+    .tp-dynamic-product-ui .ui-bar {
+      height: 5px; width: 40%; background: #3B82F6; border-radius: 3px;
+      animation: uiGrow 2.5s infinite ease-in-out alternate;
     }
-    @keyframes breathe { 0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.15)} }
-    @keyframes expandLine { 0%{transform:scaleX(0)}100%{transform:scaleX(1)} }
+    .tp-dynamic-product-ui .ui-badge {
+      position: absolute; bottom: 10px; right: 16px; font-size: 7px;
+      background: rgba(59,130,246,0.2); color: #60A5FA;
+      padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+    }
+    @keyframes uiFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+    @keyframes uiGrow { 0%{width:30%;background:#3B82F6} 100%{width:85%;background:#60A5FA} }
 
-    /* Terminal */
-    .tp-terminal { background: #080F0A; }
-    .tp-terminal .tp-code {
-      position: absolute; top: 12px; left: 12px; right: 12px;
-      font-family: 'JetBrains Mono', monospace; font-size: 8px;
-      color: #32FF78; line-height: 1.6;
+    /* 3. Brutalist Typography */
+    .tp-brutalist { background: #E2EB2C; position: relative; overflow: hidden; }
+    .tp-brutalist .brut-box {
+      position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
+      background: #000; border: 2px solid #000;
+      display: flex; flex-direction: column; justify-content: center; padding: 10px;
+      animation: brutJitter 3s infinite steps(2);
     }
-    .tp-terminal .tp-cursor {
-      display: inline-block; width: 5px; height: 11px;
-      background: #32FF78; margin-left: 2px; vertical-align: middle;
-      animation: blink 1s step-end infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
-
-    /* Editorial */
-    .tp-editorial { background: #F6F3EE; }
-    .tp-editorial .tp-accent-bar {
-      position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-      background: #EB5523;
-    }
-    .tp-editorial .tp-headline {
-      position: absolute; top: 22px; left: 22px; right: 14px;
-      font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800;
-      color: #141418; line-height: 1.3; letter-spacing: -0.01em;
-    }
-    .tp-editorial .tp-subline {
-      position: absolute; top: 68px; left: 22px;
-      font-family: 'JetBrains Mono', monospace; font-size: 7px;
-      color: #888; letter-spacing: 0.08em; text-transform: uppercase;
-    }
-    .tp-editorial .tp-box {
-      position: absolute; bottom: 14px; left: 22px; right: 14px;
-      height: 18px; background: #EB5523; border-radius: 3px;
-      animation: slideIn 1.5s ease-out infinite;
-    }
-    @keyframes slideIn { 0%{transform:scaleX(0);transform-origin:left}100%{transform:scaleX(1)} }
-
-    /* Minimal */
-    .tp-minimal { background: #FAFAFA; }
-    .tp-minimal .tp-word {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    .tp-brutalist .brut-text {
       font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 900;
-      color: #0a0a0a; letter-spacing: -0.03em;
-      animation: wordFade 3s ease-in-out infinite;
+      color: #FFF; text-transform: uppercase; letter-spacing: -0.04em; line-height: 1.1;
     }
-    .tp-minimal .tp-line2 {
-      position: absolute; bottom: 24px; left: 30%; right: 30%; height: 2px;
-      background: #0a0a0a;
-      animation: scaleInOut 3s ease-in-out infinite;
+    .tp-brutalist .brut-tag {
+      background: #E2EB2C; color: #000; font-family: 'JetBrains Mono', monospace;
+      font-size: 7.5px; font-weight: 800; padding: 2px 5px; width: fit-content; margin-top: 6px;
     }
-    @keyframes wordFade { 0%,100%{opacity:0;transform:translate(-50%,-50%) translateY(6px)}20%,80%{opacity:1;transform:translate(-50%,-50%)} }
-    @keyframes scaleInOut { 0%,100%{transform:scaleX(0)}20%,80%{transform:scaleX(1)} }
+    @keyframes brutJitter { 0%,48%{transform:translate(0,0)} 50%{transform:translate(-2px, 1px)} 52%,100%{transform:translate(0,0)} }
 
-    /* Blueprint */
-    .tp-blueprint { background: #0C2D5F; }
-    .tp-blueprint .tp-grid-b {
-      position: absolute; inset: 0; opacity: 0.3;
-      background: linear-gradient(rgba(120,210,255,0.5) 1px, transparent 1px),
-                  linear-gradient(90deg, rgba(120,210,255,0.5) 1px, transparent 1px);
-      background-size: 16px 16px;
+    /* 4. Fluid Abstract */
+    .tp-fluid { background: #0D0914; position: relative; overflow: hidden; }
+    .tp-fluid .fluid-blob1 {
+      position: absolute; width: 75px; height: 75px;
+      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+      background: radial-gradient(circle, #EC4899, #8B5CF6);
+      filter: blur(12px); opacity: 0.85;
+      animation: fluidMorph1 4s infinite linear alternate; top: 12px; left: 24px;
     }
-    .tp-blueprint .tp-circle {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 60px; height: 60px; border-radius: 50%;
-      border: 1.5px solid rgba(120,210,255,0.7);
-      animation: rotateCircle 4s linear infinite;
+    .tp-fluid .fluid-blob2 {
+      position: absolute; width: 70px; height: 70px;
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+      background: radial-gradient(circle, #06B6D4, #3B82F6);
+      filter: blur(14px); opacity: 0.75;
+      animation: fluidMorph2 5s infinite linear alternate-reverse; bottom: 12px; right: 24px;
     }
-    .tp-blueprint .tp-circle::after {
-      content: ''; position: absolute; top: -1px; left: 50%;
-      width: 4px; height: 4px; border-radius: 50%;
-      background: #78D2FF; margin-left: -2px;
+    .tp-fluid .fluid-center {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800; color: #FFF;
+      z-index: 2; letter-spacing: 0.12em; text-transform: uppercase; text-shadow: 0 0 10px rgba(0,0,0,0.8);
     }
-    @keyframes rotateCircle { to { transform: translate(-50%,-50%) rotate(360deg); } }
+    @keyframes fluidMorph1 { 0%{transform:scale(1) rotate(0deg)} 100%{transform:scale(1.2) rotate(180deg)} }
+    @keyframes fluidMorph2 { 0%{transform:scale(1) rotate(0deg)} 100%{transform:scale(1.25) rotate(-180deg)} }
 
-    /* Glass UI */
-    .tp-glass { background: linear-gradient(135deg, #0E1420, #181F30); }
-    .tp-glass .tp-card1 {
-      position: absolute; top: 14px; left: 14px; right: 40px; bottom: 35px;
-      background: rgba(255,255,255,0.06); backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+    /* 5. Technical Blueprint */
+    .tp-blueprint-eng { background: #0A192F; position: relative; overflow: hidden; }
+    .tp-blueprint-eng .bp-grid {
+      position: absolute; inset: 0;
+      background: linear-gradient(rgba(0,210,255,0.15) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(0,210,255,0.15) 1px, transparent 1px);
+      background-size: 14px 14px;
     }
-    .tp-glass .tp-card2 {
-      position: absolute; top: 30px; left: 30px; right: 14px; bottom: 14px;
-      background: rgba(90,195,255,0.08); backdrop-filter: blur(8px);
-      border: 1px solid rgba(90,195,255,0.15); border-radius: 8px;
-      animation: floatCard 3s ease-in-out infinite;
+    .tp-blueprint-eng .bp-circle {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 52px; height: 52px; border: 1.5px dashed #00D2FF; border-radius: 50%;
+      animation: bpSpin 7s infinite linear;
     }
-    @keyframes floatCard { 0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)} }
+    .tp-blueprint-eng .bp-cross {
+      position: absolute; top: 50%; left: 50%; width: 72px; height: 1px;
+      background: rgba(0,210,255,0.4); transform: translate(-50%, -50%);
+    }
+    .tp-blueprint-eng .bp-cross-v {
+      position: absolute; top: 50%; left: 50%; height: 72px; width: 1px;
+      background: rgba(0,210,255,0.4); transform: translate(-50%, -50%);
+    }
+    .tp-blueprint-eng .bp-tag {
+      position: absolute; bottom: 8px; left: 10px;
+      font-family: 'JetBrains Mono', monospace; font-size: 7px; color: #00D2FF;
+    }
+    @keyframes bpSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-    /* Neo Futuristic */
-    .tp-neo { background: #0C0A18; }
-    .tp-neo .tp-ring {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 72px; height: 72px; border-radius: 50%;
-      border: 1.5px solid rgba(185,110,255,0.5);
-      animation: ringPulse 2s ease-in-out infinite;
+    /* 6. 3D Spatial Explainer */
+    .tp-spatial { background: #07090E; perspective: 380px; position: relative; overflow: hidden; }
+    .tp-spatial .sp-cube {
+      position: absolute; top: 22px; left: 50%; width: 44px; height: 44px; margin-left: -22px;
+      transform-style: preserve-3d; animation: spOrbit 5s infinite linear;
     }
-    .tp-neo .tp-ring2 {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    .tp-spatial .sp-plane {
+      position: absolute; inset: 0; border: 1.5px solid #00F5FF;
+      background: rgba(0,245,255,0.12); border-radius: 4px;
+    }
+    .tp-spatial .sp-plane-2 {
+      position: absolute; inset: 0; border: 1.5px solid #A855F7;
+      background: rgba(168,85,247,0.12); border-radius: 4px;
+      transform: translateZ(-20px) translateY(8px);
+    }
+    .tp-spatial .sp-label {
+      position: absolute; bottom: 8px; width: 100%; text-align: center;
+      font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #00F5FF; letter-spacing: 0.05em;
+    }
+    @keyframes spOrbit { 0%{transform:rotateX(20deg) rotateY(0deg)} 100%{transform:rotateX(20deg) rotateY(360deg)} }
+
+    /* 7. Minimal Swiss Motion */
+    .tp-swiss { background: #F4F4F6; position: relative; overflow: hidden; }
+    .tp-swiss .sw-rule { position: absolute; top: 16px; left: 16px; right: 16px; height: 2px; background: #E11D48; }
+    .tp-swiss .sw-title {
+      position: absolute; top: 26px; left: 16px;
+      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 800; color: #111;
+      letter-spacing: -0.04em; animation: swType 3s infinite ease-in-out;
+    }
+    .tp-swiss .sw-grid-lines {
+      position: absolute; bottom: 12px; left: 16px; display: flex; gap: 8px;
+      font-family: 'JetBrains Mono', monospace; font-size: 7px; color: #666;
+    }
+    @keyframes swType { 0%,15%{opacity:0;transform:translateY(3px)} 30%,85%{opacity:1;transform:translateY(0)} 100%{opacity:0} }
+
+    /* 8. Data Story */
+    .tp-data { background: #05140D; position: relative; overflow: hidden; }
+    .tp-data .dt-bars {
+      position: absolute; bottom: 20px; left: 24px; right: 24px; height: 48px;
+      display: flex; align-items: flex-end; gap: 6px;
+    }
+    .tp-data .dt-bar {
+      flex: 1; background: #10B981; border-radius: 2px 2px 0 0;
+      animation: dtBarGrow 2s infinite ease-in-out alternate;
+    }
+    .tp-data .dt-bar:nth-child(2) { background: #34D399; animation-delay: 0.2s; height: 75%; }
+    .tp-data .dt-bar:nth-child(3) { background: #6EE7B7; animation-delay: 0.4s; height: 95%; }
+    .tp-data .dt-val {
+      position: absolute; top: 12px; left: 24px;
+      font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #10B981;
+    }
+    @keyframes dtBarGrow { 0%{height:25%} 100%{height:85%} }
+
+    /* 9. Terminal Motion */
+    .tp-term-m { background: #050B06; position: relative; overflow: hidden; padding: 12px; }
+    .tp-term-m .tm-text {
+      font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #22C55E; line-height: 1.5;
+    }
+    .tp-term-m .tm-cursor {
+      display: inline-block; width: 5px; height: 11px;
+      background: #22C55E; margin-left: 2px; vertical-align: middle;
+      animation: tmBlink 1s step-end infinite;
+    }
+    @keyframes tmBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* 10. Cinematic Object Film */
+    .tp-cin-obj { background: #0A0A0C; position: relative; overflow: hidden; }
+    .tp-cin-obj .co-light {
+      position: absolute; top: 22%; left: 50%; transform: translate(-50%, -50%);
+      width: 90px; height: 90px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,158,11,0.3) 0%, transparent 70%);
+      animation: coDrift 4s infinite ease-in-out alternate;
+    }
+    .tp-cin-obj .co-ring {
+      position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
       width: 44px; height: 44px; border-radius: 50%;
-      border: 1px solid rgba(0,240,255,0.4);
-      animation: ringPulse 2s ease-in-out infinite reverse;
+      border: 2px solid #F59E0B; box-shadow: 0 0 15px rgba(245,158,11,0.4);
+      animation: coFloat 3s infinite ease-in-out;
     }
-    .tp-neo .tp-dot-center {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #B96EFF; box-shadow: 0 0 12px #B96EFF;
+    .tp-cin-obj .co-text {
+      position: absolute; bottom: 10px; width: 100%; text-align: center;
+      font-family: 'Outfit', sans-serif; font-size: 8px; font-weight: 700;
+      color: #FDE68A; letter-spacing: 0.15em; text-transform: uppercase;
     }
-    @keyframes ringPulse { 0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.08)} }
+    @keyframes coDrift { 0%{transform:translate(-50%, -50%) scale(0.9)} 100%{transform:translate(-40%, -45%) scale(1.15)} }
+    @keyframes coFloat { 0%,100%{transform:translate(-50%, -50%) translateY(0)} 50%{transform:translate(-50%, -50%) translateY(-4px)} }
 
     /* Voice cards */
     .voices-grid {
@@ -1170,16 +1213,18 @@ let wsInitialized = false;
 let cachedTrends = null;
 let eventSource = null;
 
-// Template visual definitions (match actual styles backend)
+// Template visual definitions: 10 Genuine Motion Systems
 const TEMPLATES = [
-  { id: 'cyberpunk', name: 'Kinetic Tech', desc: 'Electric cyan · Fast cuts · Code animation', cls: 'tp-cyberpunk' },
-  { id: 'cinematic', name: 'Cinematic', desc: 'Deep gold · Dramatic lighting · 2.5D depth', cls: 'tp-cinematic' },
-  { id: 'terminal', name: 'Terminal Hacker', desc: 'Green phosphor · Typewriter · Monospace', cls: 'tp-terminal' },
-  { id: 'editorial', name: 'Editorial', desc: 'Cream · Orange accents · Magazine layout', cls: 'tp-editorial' },
-  { id: 'minimal', name: 'Minimal Motion', desc: 'Clean white · Subtle motion · Modern type', cls: 'tp-minimal' },
-  { id: 'blueprint', name: 'Blueprint', desc: 'Navy · Technical lines · Architectural grid', cls: 'tp-blueprint' },
-  { id: 'glass_ui', name: 'Glass UI', desc: 'Frosted cards · Translucent layers · Depth', cls: 'tp-glass' },
-  { id: 'neo_futuristic', name: 'Neo Futuristic', desc: 'Violet · Cyan rings · Particle motion', cls: 'tp-neo' },
+  { id: 'kinetic_editorial', name: 'Kinetic Editorial', desc: 'Asymmetric grid · High-contrast typography · Editorial cuts', cls: 'tp-kinetic-editorial' },
+  { id: 'dynamic_product_ui', name: 'Dynamic Product UI', desc: 'Glass panels · Micro-interactions · Interactive states', cls: 'tp-dynamic-product-ui' },
+  { id: 'brutalist_typography', name: 'Brutalist Typography', desc: 'Stark black/acid · Heavy collision type · Razor cuts', cls: 'tp-brutalist' },
+  { id: 'spatial_3d_explainer', name: '3D Spatial Explainer', desc: 'Isometric depth · Orbit camera · Volumetric planes', cls: 'tp-spatial' },
+  { id: 'technical_blueprint', name: 'Technical Blueprint', desc: 'Architectural coordinate grid · Caliper rings · Cyan glow', cls: 'tp-blueprint-eng' },
+  { id: 'minimal_swiss', name: 'Minimal Swiss Motion', desc: 'Clean white canvas · Strict grid · Red accent lines', cls: 'tp-swiss' },
+  { id: 'data_story', name: 'Data Story', desc: 'Dynamic data bars · Animated metrics · Area graphs', cls: 'tp-data' },
+  { id: 'terminal_motion', name: 'Terminal Motion', desc: 'Phosphor green · Code execution · Monospace shell', cls: 'tp-term-m' },
+  { id: 'fluid_abstract', name: 'Fluid Abstract', desc: 'Organic gradient morphing · Fluid waves · Smooth drift', cls: 'tp-fluid' },
+  { id: 'cinematic_object', name: 'Cinematic Object Film', desc: 'Dramatic gold rim lighting · Depth-of-field · Orbital drift', cls: 'tp-cin-obj' },
 ];
 
 const SURPRISES = [
@@ -1383,20 +1428,59 @@ async function sendWorkspaceMessage() {
       wsHistory.push({role:'assistant', content: data.reply});
       const spec = data.video_spec;
 
+      // Check for action updates
+      if (data.action === 'update_style' && data.selected_style) {
+        selectTemplate(data.selected_style);
+        if (pendingSpec) pendingSpec.style = data.selected_style;
+      }
+      if (data.action === 'update_hook_pacing') {
+        if (pendingSpec) pendingSpec.hook_pacing = 'rapid';
+      }
+
+      // Build animated preview cards for recommended directions
+      let cardHtml = '';
+      if (data.recommended_directions && data.recommended_directions.length > 0) {
+        cardHtml = `
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:0.73rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-family:'JetBrains Mono',monospace">Recommended Motion Systems:</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:10px">
+              ${data.recommended_directions.map(rd => {
+                const tObj = TEMPLATES.find(x => x.id === rd.id) || TEMPLATES[0];
+                return `
+                  <div class="chat-rec-card" onclick="selectTemplateAndNotify('${rd.id}')" style="cursor:pointer;border:1.5px solid ${rd.is_recommended ? 'var(--accent)' : 'var(--border)'};border-radius:10px;overflow:hidden;background:var(--card);transition:all 0.2s">
+                    <div class="template-preview ${tObj.cls}" style="height:76px;position:relative">
+                      ${getTemplateInnerHTML(tObj)}
+                    </div>
+                    <div style="padding:8px">
+                      <div style="font-size:0.75rem;font-weight:700;color:white;display:flex;align-items:center;justify-content:space-between">
+                        <span>${rd.name}</span>
+                        ${rd.is_recommended ? '<span style="font-size:0.58rem;background:var(--accent);padding:1px 5px;border-radius:99px;color:white;font-family:\'JetBrains Mono\',monospace">AI PICK</span>' : ''}
+                      </div>
+                      <div style="font-size:0.65rem;color:var(--muted);margin-top:3px;line-height:1.3">${rd.desc}</div>
+                      <button class="btn btn-ghost btn-xs" style="width:100%;justify-content:center;margin-top:6px;font-size:0.68rem;padding:3px 6px">Select Direction</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
       if (spec) {
         // AI returned a video blueprint — show the creative flow
-        appendAiMessage(data.reply, null, null);
+        appendAiMessage(data.reply, null, cardHtml);
         await showCreativeFlow(spec);
       } else if (data.reply.toLowerCase().includes('render') || data.reply.toLowerCase().includes('generate') || data.reply.toLowerCase().includes('regenerat')) {
         // Modification request on existing reel
-        appendAiMessage(data.reply, null, null);
+        appendAiMessage(data.reply, null, cardHtml);
         if (activeReel) {
           handleConversationalModification(text, data);
         }
       } else {
         // Regular chat response
         const suggestions = data.suggested_prompts?.map(p => ({label:p,val:p})) || [];
-        appendAiMessage(data.reply, suggestions.slice(0,3), null);
+        appendAiMessage(data.reply, suggestions.slice(0,3), cardHtml);
       }
     }
   } catch (err) {
@@ -1533,14 +1617,16 @@ function renderCreativePanel(topic, hooks, spec) {
 
 function getTemplateInnerHTML(t) {
   const map = {
-    'tp-cyberpunk': '<div class="tp-grid"></div><div class="tp-text">&gt; EXECUTING...</div><div class="tp-bar"></div>',
-    'tp-cinematic': '<div class="tp-glow"></div><div class="tp-text">CINEMATIC</div><div class="tp-line"></div>',
-    'tp-terminal': '<div class="tp-code">&gt; git commit -m "feat"<br>&gt; compiling...<br>&gt; BUILD OK<span class="tp-cursor"></span></div>',
-    'tp-editorial': '<div class="tp-accent-bar"></div><div class="tp-headline">THE KEY<br>INSIGHT</div><div class="tp-subline">EDITORIAL · ANALYSIS</div><div class="tp-box"></div>',
-    'tp-minimal': '<div class="tp-word">CLARITY</div><div class="tp-line2"></div>',
-    'tp-blueprint': '<div class="tp-grid-b"></div><div class="tp-circle"></div>',
-    'tp-glass': '<div class="tp-card1"></div><div class="tp-card2"></div>',
-    'tp-neo': '<div class="tp-ring"></div><div class="tp-ring2"></div><div class="tp-dot-center"></div>',
+    'tp-kinetic-editorial': '<div class="ke-bar"></div><div class="ke-title"><span class="ke-word1">KINETIC</span><span class="ke-word2">EDITORIAL</span></div><div class="ke-sub">STRUCTURE · GRID</div>',
+    'tp-dynamic-product-ui': '<div class="ui-card"><div class="ui-header"><div class="ui-dots"><div class="ui-dot"></div><div class="ui-dot" style="background:#22D3A5"></div><div class="ui-dot" style="background:#F59E0B"></div></div></div><div class="ui-bar-wrap"><div class="ui-bar"></div></div></div><div class="ui-badge">OS:RUNNING</div>',
+    'tp-brutalist': '<div class="brut-box"><div class="brut-text">LOGIC<br>GATE</div><div class="brut-tag">RAW / ZERO FLUFF</div></div>',
+    'tp-spatial': '<div class="sp-cube"><div class="sp-plane"></div><div class="sp-plane-2"></div></div><div class="sp-label">3D ISOMETRIC MESH</div>',
+    'tp-blueprint-eng': '<div class="bp-grid"></div><div class="bp-cross"></div><div class="bp-cross-v"></div><div class="bp-circle"></div><div class="bp-tag">FIG 4.2 · ALGO MAP</div>',
+    'tp-swiss': '<div class="sw-rule"></div><div class="sw-title">OBJECT</div><div class="sw-grid-lines"><span>HELVETICA</span><span>·</span><span>1957</span></div>',
+    'tp-data': '<div class="dt-val">84.2 GB/s</div><div class="dt-bars"><div class="dt-bar" style="height:35%"></div><div class="dt-bar" style="height:70%"></div><div class="dt-bar" style="height:90%"></div><div class="dt-bar" style="height:55%"></div></div>',
+    'tp-term-m': '<div class="tm-text">&gt; build --release<br>&gt; kernel init: OK<br>&gt; exec syscall<span class="tm-cursor"></span></div>',
+    'tp-fluid': '<div class="fluid-blob1"></div><div class="fluid-blob2"></div><div class="fluid-center">HARMONY</div>',
+    'tp-cin-obj': '<div class="co-light"></div><div class="co-ring"></div><div class="co-text">CINEMATIC RAY</div>',
   };
   return map[t.cls] || '';
 }
@@ -1600,6 +1686,17 @@ function selectTemplate(id, silent) {
   document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
   const el = document.getElementById(`tpl-${id}`);
   if (el) el.classList.add('selected');
+}
+
+function selectTemplateAndNotify(id) {
+  selectTemplate(id);
+  if (pendingSpec) pendingSpec.style = id;
+  const tObj = TEMPLATES.find(x => x.id === id);
+  if (tObj) {
+    showToast(`Switched motion system to ${tObj.name}`, 'success');
+    appendUserMessage(`Use ${tObj.name}`);
+    sendWorkspaceMessage();
+  }
 }
 
 function selectVoice(id) {

@@ -11,6 +11,8 @@ import { DiagramScene } from "./components/DiagramScene";
 import { PayoffScene } from "./components/PayoffScene";
 import { ContinuityBridgeLayer } from "./components/ContinuityBridgeLayer";
 
+import { VisualRecipeScene } from "./components/VisualRecipeScene";
+
 export const ReelVideo: React.FC<ReelCompositionProps> = ({ motionPlan }) => {
   const { fps } = useVideoConfig();
   const frame = useCurrentFrame();
@@ -75,6 +77,18 @@ export const ReelVideo: React.FC<ReelCompositionProps> = ({ motionPlan }) => {
   }
 
   const renderSceneContent = (scene: SceneSchema) => {
+    // 1. Universal Shot Designer Visual Recipe (High-end dynamic motion graphics)
+    if (scene.visual_recipe) {
+      return (
+        <VisualRecipeScene
+          scene={scene}
+          creativeDirection={cd}
+          recipe={scene.visual_recipe}
+        />
+      );
+    }
+
+    // 2. Legacy Fallback
     switch (scene.visual_type) {
       case "hook":
         return (

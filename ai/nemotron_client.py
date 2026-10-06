@@ -525,6 +525,61 @@ class NemotronClient:
 
     def _get_default_chat_director_reply(self, message: str) -> Dict[str, Any]:
         msg_lower = message.lower()
+
+        # ── Conversational Style Overrides ──────────────────────────────────────
+        style_match = None
+        if any(k in msg_lower for k in ["use the 3d", "use 3d", "3d spatial", "spatial 3d"]):
+            style_match = "spatial_3d_explainer"
+        elif any(k in msg_lower for k in ["use brutalist", "brutalist"]):
+            style_match = "brutalist_typography"
+        elif any(k in msg_lower for k in ["use editorial", "kinetic editorial", "editorial type"]):
+            style_match = "kinetic_editorial"
+        elif any(k in msg_lower for k in ["use product ui", "product ui", "dynamic product"]):
+            style_match = "dynamic_product_ui"
+        elif any(k in msg_lower for k in ["use blueprint", "technical blueprint"]):
+            style_match = "technical_blueprint"
+        elif any(k in msg_lower for k in ["use swiss", "minimal swiss", "swiss motion"]):
+            style_match = "minimal_swiss"
+        elif any(k in msg_lower for k in ["use data story", "data story"]):
+            style_match = "data_story"
+        elif any(k in msg_lower for k in ["use terminal", "terminal motion"]):
+            style_match = "terminal_motion"
+        elif any(k in msg_lower for k in ["use fluid", "fluid abstract"]):
+            style_match = "fluid_abstract"
+        elif any(k in msg_lower for k in ["use cinematic", "cinematic object"]):
+            style_match = "cinematic_object"
+
+        if style_match:
+            try:
+                from effects.motion_templates import MOTION_TEMPLATES
+                spec_info = MOTION_TEMPLATES.get(style_match)
+                name = spec_info.name if spec_info else style_match
+            except Exception:
+                name = style_match
+            return {
+                "reply": f"Done! Updated visual motion system to **{name}**. The scene grammar, camera paths, and typography will now execute using this motion language. Here are your script and voice options.",
+                "action": "update_style",
+                "selected_style": style_match,
+                "suggested_prompts": [
+                    "🚀 Generate Video Now",
+                    "Make the hook faster",
+                    "Select Voiceover"
+                ]
+            }
+
+        # ── Conversational Hook / Pacing Overrides ──────────────────────────────
+        if any(k in msg_lower for k in ["make the hook faster", "faster hook", "punchier hook", "speed up hook"]):
+            return {
+                "reply": "Hook pacing accelerated! Trimmed opening beat with high-velocity camera punch and instant typography reveal.",
+                "action": "update_hook_pacing",
+                "hook_pacing": "rapid",
+                "suggested_prompts": [
+                    "🚀 Generate Video Now",
+                    "Keep video and preview script",
+                    "Change voice to Energetic"
+                ]
+            }
+
         if any(k in msg_lower for k in ["change the music", "change music", "different music", "different bgm", "new sound"]):
             return {
                 "reply": "Switching Audio DNA! Regenerating procedural soundtrack with a contrasting musical genre, new BPM, distinct rhythm pattern, and refreshed chord progression while keeping your video visual cuts intact.",
@@ -566,56 +621,103 @@ class NemotronClient:
         if len(topic) > 60:
             topic = topic[:57] + "..."
 
+        # Query Motion Templates for recommended visual directions
+        try:
+            from effects.motion_templates import select_best_template_for_topic, MOTION_TEMPLATES
+            best_tpl = select_best_template_for_topic(topic)
+            if best_tpl.id == "brutalist_typography":
+                alt_styles = ["kinetic_editorial", "spatial_3d_explainer"]
+                recommendation_reason = "this concept is fundamentally about decision flow, condition gates, and binary forks"
+            elif best_tpl.id == "spatial_3d_explainer":
+                alt_styles = ["technical_blueprint", "dynamic_product_ui"]
+                recommendation_reason = "this concept is best understood as volumetric layers, isolated containers, and spatial architecture"
+            elif best_tpl.id == "technical_blueprint":
+                alt_styles = ["data_story", "kinetic_editorial"]
+                recommendation_reason = "this algorithm is fundamentally about spatial interval partitioning and geometric elimination"
+            elif best_tpl.id == "dynamic_product_ui":
+                alt_styles = ["technical_blueprint", "kinetic_editorial"]
+                recommendation_reason = "this architecture revolves around client-server contracts, request payloads, and UI data pipelines"
+            elif best_tpl.id == "kinetic_editorial":
+                alt_styles = ["spatial_3d_explainer", "dynamic_product_ui"]
+                recommendation_reason = "this concept is about high-level paradigm structure, class hierarchies, and core mental models"
+            else:
+                alt_styles = ["spatial_3d_explainer", "brutalist_typography"]
+                recommendation_reason = "this topic benefits from disciplined typography and continuous motion design"
+
+            recommended_directions = [
+                {
+                    "id": best_tpl.id,
+                    "name": best_tpl.name,
+                    "desc": best_tpl.tagline,
+                    "is_recommended": True,
+                    "reason": recommendation_reason
+                }
+            ]
+            for aid in alt_styles:
+                aspec = MOTION_TEMPLATES.get(aid)
+                if aspec:
+                    recommended_directions.append({
+                        "id": aspec.id,
+                        "name": aspec.name,
+                        "desc": aspec.tagline,
+                        "is_recommended": False,
+                        "reason": None
+                    })
+        except Exception:
+            best_tpl_id = "kinetic_editorial"
+            recommendation_reason = "this topic centers on clear visual motion hierarchy"
+            recommended_directions = [
+                {"id": "kinetic_editorial", "name": "Kinetic Editorial", "desc": "Bold asymmetric typography", "is_recommended": True, "reason": recommendation_reason},
+                {"id": "spatial_3d_explainer", "name": "3D Spatial Explainer", "desc": "Isometric 3D depth and orbit camera", "is_recommended": False},
+                {"id": "dynamic_product_ui", "name": "Dynamic Product UI", "desc": "SaaS interface and micro-interactions", "is_recommended": False}
+            ]
+
         if is_math:
             math_spec = self._get_default_math_concept(topic)
-            hook = self._get_default_viral_hook(topic, "cinematic")
+            hook = self._get_default_viral_hook(topic, "spatial_3d_explainer")
             return {
                 "reply": (
-                    f"Let's make this insane! Here is the creative choreography:\n\n"
-                    f"1. **The Hook (0-4s)**: Screen opens in high-contrast cinematic dark mode. Giant typography slams down: **\"{hook['headline']}\"** with glowing coordinate crosshairs.\n"
-                    f"2. **2D Coordinate View (4-12s)**: We plot **{math_spec['formula_2d']}** on a razor-sharp 2D Cartesian grid with glowing cyan pulses.\n"
-                    f"3. **The 3D Dimensional Leap (12-25s)**: The camera smoothly pitches downward 55 degrees while yawing 45 degrees into deep 3D space! The flat curve blooms and extrudes into a luminous wireframe **{math_spec['formula_title']}** ({math_spec['equation_latex']}) with neon height gradients.\n"
-                    f"4. **Orbital Payoff (25-50s)**: Full continuous 3D camera drift with mathematical depth beacons and punchy techno-ambient sound.\n\n"
-                    f"Ready to generate this now!"
+                    f"I created 3 visual directions for **\"{topic}\"**:\n\n"
+                    f"I recommend **3D Spatial Explainer** because {recommendation_reason}.\n\n"
+                    f"Review the animated previews and choose your direction, or say *\"Use {recommended_directions[1]['name']}\"* to switch."
                 ),
+                "recommended_directions": recommended_directions,
                 "video_spec": {
                     "topic": topic,
-                    "style": "cinematic",
+                    "style": "spatial_3d_explainer",
                     "duration": 50.0,
                     "is_math": True,
                     "math_spec": math_spec,
                     "viral_hook": hook
                 },
                 "suggested_prompts": [
-                    "🚀 Generate & Render This Math Reel",
-                    "Switch formula to Euler's 3D Complex Helix",
-                    "Make it in Neo-Futuristic Cyberpunk style",
-                    "Add faster camera rotation in 3D"
+                    "🚀 Generate Video Now",
+                    f"Use {recommended_directions[1]['name']}",
+                    "Make the hook faster"
                 ]
             }
         else:
-            hook = self._get_default_viral_hook(topic, "cinematic")
+            hook = self._get_default_viral_hook(topic, best_tpl.id if 'best_tpl' in locals() else "kinetic_editorial")
+            rec_name = best_tpl.name if 'best_tpl' in locals() else "Kinetic Editorial"
             return {
                 "reply": (
-                    f"I love this topic! Here is how we will direct it to go viral:\n\n"
-                    f"- **Hook**: **\"{hook['headline']}\"** with instant visual shock in under 0.2 seconds.\n"
-                    f"- **Visual Metaphor**: Physical hardware dissection showing data flow across cache lines and memory bus.\n"
-                    f"- **Pacing**: High-energy narration with zero fluff, synchronized with kinetic monospaced code highlights and split-screen benchmarks.\n\n"
-                    f"Ready to assemble the storyboard and render!"
+                    f"I created 3 visual directions for **\"{topic}\"**:\n\n"
+                    f"I recommend **{rec_name}** because {recommendation_reason}.\n\n"
+                    f"Review the animated previews below and choose your direction, or select an alternative."
                 ),
+                "recommended_directions": recommended_directions,
                 "video_spec": {
                     "topic": topic,
-                    "style": "cinematic",
-                    "duration": 50.0,
+                    "style": best_tpl.id if 'best_tpl' in locals() else "kinetic_editorial",
+                    "duration": 45.0,
                     "is_math": False,
                     "math_spec": None,
                     "viral_hook": hook
                 },
                 "suggested_prompts": [
-                    "🚀 Generate Reel with This Concept",
-                    "Make it a 2D to 3D Math Equation Reel instead",
-                    "Switch to Brutalist High-Contrast Style",
-                    "Generate custom code benchmark comparison"
+                    "🚀 Generate Video Now",
+                    f"Use {recommended_directions[1]['name']}",
+                    f"Use {recommended_directions[2]['name']}" if len(recommended_directions) > 2 else "Make the hook faster"
                 ]
             }
 
