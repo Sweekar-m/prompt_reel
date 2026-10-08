@@ -67,8 +67,41 @@ export interface ClosingDNASchema {
   variation_seed?: number;
 }
 
+export interface VisualDNASchema {
+  visual_strategy: string;
+  strategy_name?: string;
+  composition_system?: string;
+  typography?: Record<string, any>;
+  color_system?: Record<string, any>;
+  spacing_system?: string;
+  camera_language?: string;
+  transition_language?: string;
+  motion_language?: string;
+  scene_vocabulary?: string[];
+  texture?: string;
+  lighting?: string;
+}
+
+export interface StoryDNASchema {
+  narrative_structure: string;
+  structure_name?: string;
+  topic_category?: string;
+  intent?: string;
+  complexity?: string;
+  emotional_tone?: string;
+  hook_type?: string;
+  information_density?: string;
+  pacing?: string;
+  reveal_timing?: string;
+  payoff_type?: string;
+  scene_count?: number;
+  target_duration?: number;
+  emotional_progression?: string[];
+}
+
 export interface CreativeDirectionSchema {
   style_id?: string;
+  visual_strategy_id?: string;
   palette: PaletteSchema;
   typography?: TypographySchema;
   hook?: {
@@ -87,6 +120,8 @@ export interface CreativeDirectionSchema {
   };
   audio_dna?: AudioDNASchema;
   closing_dna?: ClosingDNASchema;
+  visual_dna?: VisualDNASchema;
+  story_dna?: StoryDNASchema;
   creative_seed?: string;
   audio_seed?: number;
   closing_seed?: number;
@@ -294,6 +329,7 @@ export interface SceneSchema {
   end: number;
   duration: number;
   visual_type: "hook" | "math_3d" | "metaphor" | "code" | "benchmark" | "split" | "diagram" | "payoff" | string;
+  composition_variant?: string;
   voice_text?: string;
   elements: SceneElements;
   // Dynamic Shot Designer Visual Recipe (Universal Visual Engine)
@@ -311,6 +347,9 @@ export interface MotionPlanSchema {
   fps?: number;
   total_frames?: number;
   creative_direction: CreativeDirectionSchema;
+  story_dna?: StoryDNASchema;
+  visual_dna?: VisualDNASchema;
+  composition_variants?: string[];
   technical_summary?: Record<string, unknown>;
   code_assets?: Record<string, unknown>;
   scenes: SceneSchema[];

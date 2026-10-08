@@ -153,6 +153,10 @@ def load_font(pairing_id: str, role: str, size: int) -> ImageFont.FreeTypeFont:
         return ImageFont.load_default()
 
 
+def get_font_pairing(pairing_id: str) -> FontPairing:
+    return FONT_PAIRINGS.get(pairing_id, FONT_PAIRINGS["inter_jetbrains"])
+
+
 def list_font_pairings() -> List[Dict[str, Any]]:
     return [
         {

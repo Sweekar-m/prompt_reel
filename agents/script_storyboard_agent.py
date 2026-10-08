@@ -28,23 +28,42 @@ class ScriptStoryboardAgent:
     def generate_motion_plan(
         self,
         topic: str,
-        creative_dir: Dict[str, Any],
-        total_duration: float = 50.0
+        creative_dir: Optional[Dict[str, Any]] = None,
+        total_duration: float = 50.0,
+        creative_direction: Optional[Dict[str, Any]] = None,
+        duration_sec: Optional[float] = None,
+        **kwargs
     ) -> Dict[str, Any]:
         """
         Produces a complete Motion Plan JSON ready for deterministic rendering.
         """
+        creative_dir = creative_dir or creative_direction or {}
+        if duration_sec is not None:
+            total_duration = duration_sec
+
         # Step 1: Query technical explanation and code snippets
         tech_info = self.nemotron.explain_technical_concept(topic)
         code_info = self.nemotron.generate_code_snippets(topic)
 
+        # Step 1b: Natural duration check
+        story_dna = creative_dir.get("story_dna", {})
+        if story_dna and story_dna.get("target_duration"):
+            total_duration = float(story_dna["target_duration"])
+
         # Step 2: Extract timeline from creative direction's story structure
+        if "story_structure" not in creative_dir or not creative_dir.get("story_structure", {}).get("timeline"):
+            s_dna = creative_dir.get("story_dna", {})
+            struct_id = s_dna.get("narrative_structure") or s_dna.get("id") or "structure_a"
+            from effects.story_structures import STORY_STRUCTURES
+            struct_obj = STORY_STRUCTURES.get(struct_id, STORY_STRUCTURES["structure_a"])
+            creative_dir["story_structure"] = struct_obj.to_story_structure_dict(total_duration)
+
         timeline_beats = creative_dir["story_structure"]["timeline"]
 
         # Step 3: Generate engaging, topic-tailored conversational narration
         generated_scripts = self.nemotron.generate_script(topic, timeline_beats, tech_info, code_info)
-        voice_profile = creative_dir["voice"]
-        voice_rate = voice_profile.get("rate", "+20%")
+        voice_profile = creative_dir.get("voice", {})
+        voice_rate = voice_profile.get("rate", "+20%") if isinstance(voice_profile, dict) else "+20%"
 
         scenes = []
         is_math = creative_dir.get("is_math") or self.nemotron._is_math_topic(topic)
@@ -97,12 +116,14 @@ class ScriptStoryboardAgent:
         audio_events = extract_audio_events_from_motion_plan(scenes, total_duration)
 
         motion_plan = {
-            "version": "2.1",
+            "version": "3.0",
             "topic": topic,
             "duration": total_duration,
             "fps": 30,
             "total_frames": int(total_duration * 30),
             "creative_direction": creative_dir,
+            "story_dna": story_dna,
+            "visual_dna": creative_dir.get("visual_dna", {}),
             "technical_summary": tech_info,
             "code_assets": code_info,
             "is_math": is_math,

@@ -66,12 +66,10 @@ export const VisualRecipeScene: React.FC<{
     const subj = recipe.primary_subject;
     const props = subj.properties || {};
 
-    // ── A. Branching Logic (e.g. Java if-else) ───────────────────────────────
-    if (subj.type === "branching_logic") {
+    // ── A. Branching Logic / Gate ───────────────────────────────────────────
+    if (subj.type === "branching_logic" || subj.type === "branching_gate") {
       const conditionExpr = props.condition_expr || "x > 10";
       const activePath = props.active_path || "TRUE";
-      const pulseT = (frame % 30) / 30;
-      const pulsePos = interpolate(pulseT, [0, 1], [0, 100]);
 
       return (
         <div
@@ -168,7 +166,7 @@ export const VisualRecipeScene: React.FC<{
     }
 
     // ── B. 3D Spatial Stack (e.g. Docker Container Layers, Memory Heap) ───────
-    if (subj.type === "spatial_3d_mesh") {
+    if (subj.type === "spatial_3d_mesh" || subj.type === "spatial_layer_stack") {
       const layers = (props.layers as string[]) || ["Layer 1", "Layer 2", "Layer 3"];
       const activeLayerIdx = props.active_layer_index || 0;
 
@@ -195,7 +193,7 @@ export const VisualRecipeScene: React.FC<{
               marginBottom: 8,
             }}
           >
-            ✦ VOLUMETRIC CONTAINER STACK ✦
+            ✦ VOLUMETRIC STACK ✦
           </div>
 
           <div
@@ -251,7 +249,7 @@ export const VisualRecipeScene: React.FC<{
                       backgroundColor: "rgba(0,0,0,0.4)",
                     }}
                   >
-                    {isSelected ? "MOUNTED READ-WRITE" : "IMMUTABLE RO"}
+                    {isSelected ? "MOUNTED ACTIVE" : "IMMUTABLE"}
                   </div>
                 </div>
               );
@@ -262,7 +260,7 @@ export const VisualRecipeScene: React.FC<{
     }
 
     // ── C. Data Flow / Spatial Search (e.g. Binary Search Partition) ──────────
-    if (subj.type === "data_flow") {
+    if (subj.type === "data_flow" || subj.type === "data_partition") {
       const arr = (props.array_elements as number[]) || [2, 7, 12, 19, 24, 38, 45, 56, 71, 88];
       const midIdx = props.mid_idx || Math.floor(arr.length / 2);
       const targetVal = props.target_val || 45;
@@ -365,7 +363,6 @@ export const VisualRecipeScene: React.FC<{
             transform: `scale(${enterSpring})`,
           }}
         >
-          {/* OS Window Header */}
           <div
             style={{
               padding: "16px 24px",
@@ -389,7 +386,6 @@ export const VisualRecipeScene: React.FC<{
             </div>
           </div>
 
-          {/* URL & Method Row */}
           <div style={{ padding: "24px 28px", display: "flex", alignItems: "center", gap: 16 }}>
             <span
               style={{
@@ -413,29 +409,354 @@ export const VisualRecipeScene: React.FC<{
       );
     }
 
-    // ── Default Graphic Subject ──────────────────────────────────────────────
+    // ── E. Nodes Graph Network ───────────────────────────────────────────────
+    if (subj.type === "nodes_graph" || subj.type === "nodes" || subj.type === "graphs") {
+      const nodes = (props.nodes as string[]) || ["Node A", "Node B", "Node C", "Node D"];
+      const activeIdx = Math.floor(frame / 20) % nodes.length;
+
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: 20,
+            width: "100%",
+            maxWidth: 880,
+            transform: `scale(${enterSpring})`,
+          }}
+        >
+          {nodes.map((nodeLabel, nIdx) => {
+            const isActive = nIdx === activeIdx;
+            return (
+              <div
+                key={nIdx}
+                style={{
+                  minWidth: 180,
+                  padding: "20px 24px",
+                  borderRadius: 18,
+                  backgroundColor: isActive ? toRgba(palette.surface, 0.95) : "rgba(18, 24, 38, 0.7)",
+                  border: isActive ? `2px solid ${toRgba(palette.accent, 1)}` : `1.5px solid ${toRgba(palette.primary, 0.3)}`,
+                  boxShadow: isActive ? `0 0 35px ${toRgba(palette.accent, 0.4)}` : "none",
+                  textAlign: "center",
+                  transform: isActive ? "scale(1.05)" : "scale(1.0)",
+                  transition: "transform 0.2s ease",
+                }}
+              >
+                <div style={{ fontFamily: monoFont, fontSize: 13, color: isActive ? toRgba(palette.accent, 1) : "#64748b" }}>
+                  VERTEX 0{nIdx + 1}
+                </div>
+                <div style={{ fontFamily: headingFont, fontSize: 22, fontWeight: 700, color: "#ffffff", marginTop: 4 }}>
+                  {nodeLabel}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // ── F. Timeline Steps ───────────────────────────────────────────────────
+    if (subj.type === "timeline_steps" || subj.type === "timelines") {
+      const steps = (props.steps as string[]) || ["Stage 1", "Stage 2", "Stage 3", "Stage 4"];
+      const activeStep = Math.min(steps.length - 1, Math.floor((frame / durationFrames) * steps.length));
+
+      return (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            maxWidth: 900,
+            transform: `scale(${enterSpring})`,
+            gap: 12,
+          }}
+        >
+          {steps.map((step, sIdx) => {
+            const isCompleted = sIdx <= activeStep;
+            return (
+              <div
+                key={sIdx}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: isCompleted ? toRgba(palette.accent, 1) : "rgba(255,255,255,0.1)",
+                    color: isCompleted ? "#000000" : "#ffffff",
+                    fontFamily: monoFont,
+                    fontWeight: 900,
+                    fontSize: 16,
+                  }}
+                >
+                  {sIdx + 1}
+                </div>
+                <div
+                  style={{
+                    fontFamily: headingFont,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: isCompleted ? "#ffffff" : "#64748b",
+                    textAlign: "center",
+                  }}
+                >
+                  {step}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // ── G. Metrics Chart / Counters ──────────────────────────────────────────
+    if (subj.type === "metrics_chart" || subj.type === "charts" || subj.type === "metric_counter" || subj.type === "counters") {
+      const metricValue = props.value || "99.9%";
+      const metricLabel = props.label || "THROUGHPUT EFFICIENCY";
+      const subMetrics = (props.sub_metrics as string[]) || ["Latency: 1.2ms", "Ops/sec: 140k", "P99: 4.8ms"];
+
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 20,
+            width: "100%",
+            maxWidth: 820,
+            padding: "36px 40px",
+            borderRadius: 24,
+            backgroundColor: toRgba(palette.surface, 0.95),
+            border: `2px solid ${toRgba(palette.accent, 0.7)}`,
+            boxShadow: `0 0 50px ${toRgba(palette.accent, 0.3)}`,
+            transform: `scale(${enterSpring})`,
+          }}
+        >
+          <div style={{ fontFamily: monoFont, fontSize: 16, color: toRgba(palette.primary, 1), letterSpacing: "0.2em", fontWeight: 800 }}>
+            {metricLabel}
+          </div>
+          <div style={{ fontFamily: monoFont, fontSize: 72, fontWeight: 900, color: toRgba(palette.accent, 1) }}>
+            {metricValue}
+          </div>
+          <div style={{ display: "flex", gap: 24, borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 16 }}>
+            {subMetrics.map((sm, smIdx) => (
+              <span key={smIdx} style={{ fontFamily: monoFont, fontSize: 15, color: "#94a3b8" }}>
+                ✦ {sm}
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ── H. Comparison Panels / Split ─────────────────────────────────────────
+    if (subj.type === "comparison_split" || subj.type === "comparison_panels") {
+      const leftTitle = props.left_title || "BASELINE APPROACH";
+      const leftDesc = props.left_desc || "O(N) Complexity • Linear scan";
+      const rightTitle = props.right_title || "OPTIMIZED ARCHITECTURE";
+      const rightDesc = props.right_desc || "O(1) Direct Lookup • Cache friendly";
+
+      return (
+        <div
+          style={{
+            display: "flex",
+            gap: 20,
+            width: "100%",
+            maxWidth: 900,
+            transform: `scale(${enterSpring})`,
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              padding: "28px 24px",
+              borderRadius: 20,
+              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              border: "1.5px solid rgba(239, 68, 68, 0.4)",
+            }}
+          >
+            <div style={{ fontFamily: monoFont, fontSize: 14, color: "#f87171", fontWeight: 800 }}>✕ {leftTitle}</div>
+            <div style={{ fontFamily: headingFont, fontSize: 20, color: "#ffffff", marginTop: 12 }}>{leftDesc}</div>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              padding: "28px 24px",
+              borderRadius: 20,
+              backgroundColor: toRgba(palette.surface, 0.95),
+              border: `2px solid ${toRgba(palette.accent, 0.8)}`,
+              boxShadow: `0 0 35px ${toRgba(palette.accent, 0.3)}`,
+            }}
+          >
+            <div style={{ fontFamily: monoFont, fontSize: 14, color: toRgba(palette.accent, 1), fontWeight: 800 }}>✓ {rightTitle}</div>
+            <div style={{ fontFamily: headingFont, fontSize: 20, color: "#ffffff", marginTop: 12 }}>{rightDesc}</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── I. Terminal Trace / Code Stream ──────────────────────────────────────
+    if (subj.type === "terminal_trace" || subj.type === "code_stream") {
+      const lines = (props.lines as string[]) || ["$ build --release", "Compiled 42 modules", "Optimizing memory layout", "Status: Ready in 0.4s"];
+
+      return (
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 860,
+            backgroundColor: "rgba(10, 14, 22, 0.95)",
+            border: `1.5px solid ${toRgba(palette.primary, 0.5)}`,
+            borderRadius: 18,
+            overflow: "hidden",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.8)",
+            transform: `scale(${enterSpring})`,
+          }}
+        >
+          <div style={{ padding: "12px 20px", backgroundColor: "rgba(0,0,0,0.4)", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 8 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "#ef4444" }} />
+            <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "#f59e0b" }} />
+            <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "#22c55e" }} />
+          </div>
+          <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {lines.map((ln, lIdx) => (
+              <div key={lIdx} style={{ fontFamily: monoFont, fontSize: 17, color: lIdx === lines.length - 1 ? toRgba(palette.accent, 1) : "#cbd5e1" }}>
+                {ln}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ── J. Matrix Grid / Particles ───────────────────────────────────────────
+    if (subj.type === "matrix_grid" || subj.type === "grids" || subj.type === "particle_field" || subj.type === "particles") {
+      const cells = Array.from({ length: 16 });
+      const activeCell = Math.floor(frame / 6) % cells.length;
+
+      return (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 12,
+            width: "100%",
+            maxWidth: 600,
+            transform: `scale(${enterSpring})`,
+          }}
+        >
+          {cells.map((_, cIdx) => {
+            const isHighlight = cIdx === activeCell || (cIdx + 3) % 5 === 0;
+            return (
+              <div
+                key={cIdx}
+                style={{
+                  height: 60,
+                  borderRadius: 12,
+                  backgroundColor: isHighlight ? toRgba(palette.accent, 0.25) : "rgba(255,255,255,0.05)",
+                  border: isHighlight ? `1.5px solid ${toRgba(palette.accent, 1)}` : "1px solid rgba(255,255,255,0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontFamily: monoFont,
+                  fontSize: 14,
+                  color: isHighlight ? toRgba(palette.accent, 1) : "#64748b",
+                }}
+              >
+                0x{cIdx.toString(16).toUpperCase()}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // ── K. Mathematical Surface / 3D Geometry ────────────────────────────────
+    if (subj.type === "math_surface_3d" || subj.type === "stream_flow" || subj.type === "radial_hub") {
+      const formula = props.formula || "f(x, y) = sin(x) · cos(y)";
+      const label = props.label || "HARMONIC MANIFOLD";
+
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+            padding: "32px 40px",
+            borderRadius: 24,
+            backgroundColor: toRgba(palette.surface, 0.95),
+            border: `2px solid ${toRgba(palette.primary, 0.6)}`,
+            boxShadow: `0 0 45px ${toRgba(palette.primary, 0.3)}`,
+            transform: `scale(${enterSpring})`,
+            maxWidth: 800,
+          }}
+        >
+          <div style={{ fontFamily: monoFont, fontSize: 16, color: toRgba(palette.primary, 1), letterSpacing: "0.2em", fontWeight: 800 }}>
+            ✦ {label} ✦
+          </div>
+          <div style={{ fontFamily: monoFont, fontSize: 32, fontWeight: 900, color: "#ffffff" }}>
+            {formula}
+          </div>
+          <div style={{ fontFamily: headingFont, fontSize: 18, color: "#94a3b8" }}>
+            Continuous tensor surface projection
+          </div>
+        </div>
+      );
+    }
+
+    // ── L. Semantic Concept Card (Dynamic, Never Lazy SYSTEM CORE) ───────────
+    const conceptName = subj.name || recipe.beat_name || "ARCHITECTURE INVARIANT";
+    const conceptDesc = subj.description || (props.description as string) || "System structure component";
+
     return (
       <div
         style={{
           display: "flex",
-          gap: 16,
-          alignItems: "center",
+          flexDirection: "column",
+          alignItems: isLeftWeighted ? "flex-start" : "center",
+          gap: 12,
+          padding: "28px 36px",
+          borderRadius: 20,
+          backgroundColor: toRgba(palette.surface, 0.94),
+          border: `2px solid ${toRgba(palette.primary, 0.6)}`,
+          boxShadow: `0 16px 50px rgba(0, 0, 0, 0.7), 0 0 35px ${toRgba(palette.primary, 0.25)}`,
           transform: `scale(${enterSpring})`,
+          maxWidth: 820,
         }}
       >
         <div
           style={{
             fontFamily: monoFont,
-            fontSize: 20,
+            fontSize: 14,
             fontWeight: 800,
-            color: toRgba(palette.primary, 1),
-            padding: "10px 24px",
-            borderRadius: 30,
-            border: `1.5px solid ${toRgba(palette.primary, 0.4)}`,
-            backgroundColor: toRgba(palette.surface, 0.9),
+            letterSpacing: "0.2em",
+            color: toRgba(palette.accent, 1),
           }}
         >
-          ✦ SYSTEM CORE: {recipe.beat_name.toUpperCase()}
+          ✦ {conceptName.toUpperCase()} ✦
+        </div>
+        <div
+          style={{
+            fontFamily: headingFont,
+            fontSize: 26,
+            fontWeight: 700,
+            color: "#ffffff",
+            lineHeight: 1.3,
+          }}
+        >
+          {conceptDesc}
         </div>
       </div>
     );

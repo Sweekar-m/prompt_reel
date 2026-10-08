@@ -34,6 +34,7 @@ from agents.continuity_weaver_agent import ContinuityWeaverAgent
 from agents.shot_designer_agent import ShotDesignerAgent
 from effects.motion_templates import list_motion_templates, get_motion_template
 from engine.dna_registry import DNARegistry
+from engine.schema_validation import validate_motion_plan
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PROJECTS_DIR = os.path.join(BASE_DIR, "projects")
@@ -374,6 +375,12 @@ class ReelService:
             project["continuity_violations"] = motion_plan.get("continuity_violations", [])
             project["motion_plan"] = motion_plan
 
+            # ── STEP 5d: Creative Plan Schema Validation ────────────────────
+            val_valid, val_report = validate_motion_plan(motion_plan)
+            project["schema_validation"] = val_report
+            if not val_valid:
+                print(f"[ReelService] Creative plan validation warning: {val_report.get('error')}")
+
             await self.broadcast_progress(
                 reel_id, 5,
                 f"Continuity verified -- Score: {continuity_score:.0f}/100 "
@@ -384,6 +391,7 @@ class ReelService:
                     "continuity_passed": continuity_passed,
                     "continuity_bridges": len(motion_plan.get("continuity_bridges", [])),
                     "carry_chain": self.continuity_weaver.get_carry_summary(motion_plan),
+                    "schema_valid": val_valid,
                 }
             )
 
@@ -588,11 +596,24 @@ class ReelService:
             self.save_project(project)
 
             # Store in DNA registry
-            if project.get("creative_dna"):
-                try:
-                    self.dna_registry.register_video(project["creative_dna"])
-                except Exception as dna_err:
-                    print(f"[ReelService] DNA registration note: {dna_err}")
+            dna_data = dict(project.get("creative_dna") or {})
+            if "story_dna" in cd:
+                dna_data["story_structure"] = cd["story_dna"].get("narrative_structure")
+            if "visual_dna" in cd:
+                v_dna = cd["visual_dna"]
+                dna_data["visual_strategy"] = v_dna.get("visual_strategy")
+                dna_data["camera_language"] = v_dna.get("camera_language")
+                dna_data["transition_language"] = v_dna.get("transition_language")
+                dna_data["typography_system"] = v_dna.get("typography", {}).get("system")
+                dna_data["color_system"] = v_dna.get("color_system")
+            if motion_plan:
+                dna_data["scene_sequence"] = [sc.get("visual_type") for sc in motion_plan.get("scenes", [])]
+                dna_data["composition_variants"] = [sc.get("composition_variant") for sc in motion_plan.get("scenes", []) if sc.get("composition_variant")]
+
+            try:
+                self.dna_registry.register_video(dna_data)
+            except Exception as dna_err:
+                print(f"[ReelService] DNA registration note: {dna_err}")
 
             await self.broadcast_progress(reel_id, 10, "Final Video Complete & Ready!", 100, {"video_url": f"/api/reels/{reel_id}/video"})
 

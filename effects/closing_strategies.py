@@ -223,7 +223,10 @@ def _formulate_closer_copy(
     t_clean = topic.strip().title()
 
     if strategy == "callback":
-        headline = f"AND THAT ANSWERS: {hook_headline}"
+        if t_clean.lower() in hook_headline.lower():
+            headline = f"AND THAT ANSWERS: {hook_headline}"
+        else:
+            headline = f"AND THAT ANSWERS: {t_clean.upper()}"
         secondary = f"Now you understand the exact physical mechanism powering {t_clean}."
         stat = "VERIFIED IN HARDWARE"
         callback_ref = hook_headline

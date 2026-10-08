@@ -14,8 +14,11 @@ export const PayoffScene: React.FC<{
   const closingDna = creativeDirection.closing_dna;
 
   // Strategy and Layout resolution
+  const compVariant = scene.composition_variant;
   const strategyId = (elems.closing_strategy as string) || closingDna?.strategy_id || "kinetic_statement";
-  const layout = (elems.layout as string) || closingDna?.layout || "kinetic_words";
+  const layout = compVariant === "editorial_quote" 
+    ? "centered_minimal" 
+    : (compVariant === "split_benchmark" ? "split_before_after" : (compVariant || (elems.layout as string) || closingDna?.layout || "kinetic_words"));
 
   const headline = (elems.headline as string) || (elems.stat as string) || closingDna?.headline || "MASTER TAKEAWAY";
   const secondary = (elems.secondary_text as string) || (elems.subtitle as string) || closingDna?.secondary_text || "Deterministic system execution";

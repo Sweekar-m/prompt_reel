@@ -33,11 +33,12 @@ def render_motion_plan_frame(
     from a verified Motion Plan.
     """
     W, H = canvas_size
-    cd = motion_plan["creative_direction"]
-    palette_data = cd["palette"]
-    palette_id = palette_data.get("id", "electric_matrix")
+    cd = motion_plan.get("creative_direction", {})
+    palette_data = cd.get("palette", {})
+    palette_id = palette_data.get("id") or palette_data.get("palette_id") or "electric_matrix"
     palette = get_palette(palette_id)
-    font_pair_id = cd["typography"]["id"]
+    font_data = cd.get("typography", {})
+    font_pair_id = font_data.get("id") or font_data.get("font_pair_id") or "inter_jetbrains"
 
     # 1. Base Canvas with background color
     bg = palette.background
@@ -107,6 +108,21 @@ def render_motion_plan_frame(
             lx = (W - lw) // 2
             ly = top_y + i * line_height
             draw.text((lx, ly), l, fill=fill, font=font)
+
+    recipe = active_scene.get("visual_recipe")
+    if recipe:
+        typo = recipe.get("typography", {})
+        if "headline" not in elems and typo.get("headline"):
+            elems["headline"] = typo["headline"]
+        if "badge" not in elems and typo.get("badge"):
+            elems["badge"] = typo["badge"]
+        if "subtext" not in elems and typo.get("subtext"):
+            elems["subtext"] = typo["subtext"]
+        if "title" not in elems and typo.get("headline"):
+            elems["title"] = typo["headline"]
+        subj = recipe.get("primary_subject", {})
+        if "description" not in elems and subj.get("description"):
+            elems["description"] = subj["description"]
 
     # ── Scene Type Dispatch ──────────────────────────────────────────────────
     if v_type == "hook":
